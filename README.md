@@ -34,7 +34,27 @@ Requires **Homebox 0.26+**, which has the `/v1/entities` API.
 2. Add the service from [`compose.example.yml`](compose.example.yml) to your Homebox stack.
 3. Open the UI on port 8080. The first check runs at startup.
 
-GitHub Actions builds a multi-arch image (amd64 and arm64) on every push to `main` and pushes it to GHCR as `:main` and `:sha-<commit>`. CI does not redeploy anything, because the service lives inside the Homebox stack. To update, redeploy that stack: `pull_policy: always` makes it pull the fresh `:main` image. The first push creates the GHCR package as **private**, so either make it public or give the deploy host registry credentials.
+### Images, releases and updates
+
+GitHub Actions builds multi-arch images (amd64 and arm64) and pushes them to GHCR:
+
+| Event | Tags |
+|---|---|
+| Push to `main` | `:main`, `:sha-<commit>` |
+| Published GitHub release `vX.Y.Z` | `:X.Y.Z`, `:X.Y`, `:latest` (`:latest` is skipped for pre-releases) |
+
+The compose example uses `:latest`, which only moves when you publish a release. Turn on Dockhand's
+auto-update (or use **Check for updates**) for the container, and each release rolls out on its
+own schedule. To cut a release:
+
+```sh
+# bump `version` in pyproject.toml, commit, push; then:
+gh release create v0.2.0 --generate-notes
+```
+
+CI fails the release build if the tag doesn't match the `pyproject.toml` version. The first push
+creates the GHCR package as **private**, so either make it public or give the deploy host registry
+credentials.
 
 > The web UI has no authentication. Keep it on your LAN or behind your reverse proxy's auth.
 
