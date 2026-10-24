@@ -97,7 +97,7 @@ recall-checker test-notify        # send a test message through Apprise
 
 The web UI also has a **Test notification** button. It shows whether delivery worked and, if it
 failed, Apprise's reason (connection refused, auth error, and so on). From the host:
-`docker exec homebox_recalls recall-checker test-notify`.
+`docker exec <container> recall-checker test-notify`.
 
 ## Development
 
