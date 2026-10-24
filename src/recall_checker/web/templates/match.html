@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ m.item.name }} — Recall Checker{% endblock %}
+{% block content %}
+<p><a href="/">← All matches</a></p>
+<h2 style="margin-top:0">
+  <span class="badge {{ m.tier.name }}">{{ m.tier.name }}</span>
+  {{ m.item.name }}
+  <span class="badge status">{{ m.status }}</span>
+</h2>
+
+<div class="card">
+  <strong>Why this matched</strong>
+  <ul class="evidence">
+    {% for e in m.evidence %}
+      <li>{{ e.detail }}{% if e.snippet %}<span class="snippet">“{{ e.snippet }}”</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:.5rem">
+    {% if m.status != "confirmed" %}
+    <form class="inline" method="post" action="/match/{{ m.id }}/status">
+      <input type="hidden" name="status" value="confirmed">
+      <button class="primary">Confirm — this is my item{% if settings.writeback and not m.writeback_at %} (tag in Homebox){% endif %}</button>
+    </form>
+    {% endif %}
+    {% if m.status != "dismissed" %}
+    <form class="inline" method="post" action="/match/{{ m.id }}/status">
+      <input type="hidden" name="status" value="dismissed">
+      <button class="danger">Dismiss — not affected</button>
+    </form>
+    {% endif %}
+    {% if m.status != "new" %}
+    <form class="inline" method="post" action="/match/{{ m.id }}/status">
+      <input type="hidden" name="status" value="new">
+      <button>Reopen</button>
+    </form>
+    {% endif %}
+  </div>
+  <p class="muted" style="margin-bottom:0">
+    Found {{ m.created_at[:10] }}
+    {% if m.notified_at %} · notified {{ m.notified_at[:10] }}{% endif %}
+    {% if m.writeback_at %} · written to Homebox {{ m.writeback_at[:10] }}{% endif %}
+  </p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Your item</h3>
+    <dl>
+      <dt>Name</dt><dd><a href="{{ m.item_link }}" target="_blank" rel="noopener">{{ m.item.name }}</a></dd>
+      {% if m.item.manufacturer %}<dt>Manufacturer</dt><dd>{{ m.item.manufacturer }}</dd>{% endif %}
+      {% if m.item.modelNumber %}<dt>Model</dt><dd>{{ m.item.modelNumber }}</dd>{% endif %}
+      {% if m.item.serialNumber %}<dt>Serial</dt><dd>{{ m.item.serialNumber }}</dd>{% endif %}
+      {% if m.item.purchaseDate %}<dt>Purchased</dt><dd>{{ m.item.purchaseDate }}</dd>{% endif %}
+      {% if m.item.location %}<dt>Location</dt><dd>{{ m.item.location }}</dd>{% endif %}
+      {% if m.item.description %}<dt>Description</dt><dd>{{ m.item.description }}</dd>{% endif %}
+    </dl>
+  </div>
+  {% set r = m.recall %}
+  {% if r %}
+  <div class="card">
+    <h3><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.label }}</a></h3>
+    <dl>
+      <dt>Title</dt><dd>{{ r.title }}</dd>
+      <dt>Date</dt><dd>{{ r.recall_date }}</dd>
+      {% if r.brands %}<dt>Firms</dt><dd>{{ r.brands|join("; ") }}</dd>{% endif %}
+      {% if r.units %}<dt>Units</dt><dd>{{ r.units }}</dd>{% endif %}
+      {% if r.hazards %}<dt>Hazard</dt><dd>{{ r.hazards|join(" ") }}</dd>{% endif %}
+      {% if r.remedies %}<dt>Remedy</dt><dd>{{ r.remedies|join(" ") }}</dd>{% endif %}
+      {% if r.consumer_contact %}<dt>Contact</dt><dd>{{ r.consumer_contact }}</dd>{% endif %}
+      {% if r.upcs %}<dt>UPCs</dt><dd>{{ r.upcs|join(", ") }}</dd>{% endif %}
+    </dl>
+    {% if r.images %}<p><img class="recall" src="{{ r.images[0] }}" alt="Recalled product" loading="lazy"></p>{% endif %}
+    <details><summary>Full description</summary><p>{{ r.description }}</p></details>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

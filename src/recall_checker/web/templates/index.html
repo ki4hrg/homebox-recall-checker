@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block header_extra %}
+<div>
+  {% if last_run %}
+    <span class="muted">Last check {{ last_run.started_at[:16].replace("T", " ") }} UTC ·
+      {{ last_run.items_total }} items · {{ last_run.recalls_total }} recalls
+      {% if last_run.errors %} · <strong style="color:var(--high)">{{ last_run.errors|length }} error(s)</strong>{% endif %}
+    </span>
+  {% endif %}
+  <form class="inline" method="post" action="/run">
+    <button class="primary" {% if running %}disabled{% endif %}>{{ "Checking…" if running else "Run check now" }}</button>
+  </form>
+</div>
+{% endblock %}
+{% block content %}
+<nav class="filters">
+  {% for s in ["new", "confirmed", "dismissed", "all"] %}
+    <a href="?status={{ s }}&tier={{ tier }}" class="{{ 'on' if status == s }}">{{ s|capitalize }}
+      {% if s != "all" %}({{ counts.get(s, 0) }}){% endif %}</a>
+  {% endfor %}
+  <span style="flex:1"></span>
+  {% for t in ["", "medium", "high"] %}
+    <a href="?status={{ status }}&tier={{ t }}" class="{{ 'on' if tier == t }}">{{ "Any confidence" if not t else t|capitalize ~ "+" }}</a>
+  {% endfor %}
+</nav>
+
+{% for m in matches %}
+  <div class="card">
+    <h3>
+      <span class="badge {{ m.tier.name }}">{{ m.tier.name }}</span>
+      <a href="/match/{{ m.id }}">{{ m.item.name }}</a>
+      {% if m.item.manufacturer or m.item.modelNumber %}<span class="muted">· {{ m.item.manufacturer }} {{ m.item.modelNumber }}</span>{% endif %}
+      {% if m.status != "new" %}<span class="badge status">{{ m.status }}</span>{% endif %}
+    </h3>
+    {% if m.recall %}
+      <div>{{ m.recall.title }} <span class="muted">({{ m.recall.recall_date }})</span></div>
+    {% endif %}
+    <ul class="evidence">
+      {% for e in m.evidence %}<li>{{ e.detail }}</li>{% endfor %}
+    </ul>
+  </div>
+{% else %}
+  <div class="empty">No matches here.{% if not last_run %} Run a check to get started.{% endif %}</div>
+{% endfor %}
+{% endblock %}

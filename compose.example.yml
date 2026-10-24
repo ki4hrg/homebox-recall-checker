@@ -1,0 +1,27 @@
+# Add this service to your existing Homebox stack (same compose project/network).
+# The image is built and pushed by GitHub Actions; compose only pulls it.
+services:
+  recall-checker:
+    image: ${RECALL_CHECKER_IMAGE:-ghcr.io/ki4hrg/homebox-recall-checker:main}
+    pull_policy: always            # tag is reused across builds; always pull the fresh one
+    restart: unless-stopped
+    depends_on:
+      - homebox
+    environment:
+      HOMEBOX_URL: http://homebox:7745
+      HOMEBOX_TOKEN: ${HOMEBOX_RECALL_TOKEN}          # Homebox → Profile → API Keys (hb_…)
+      HOMEBOX_PUBLIC_URL: https://homebox.example.com # for links in alerts
+      PUBLIC_URL: https://recalls.example.com         # this UI, for "Review match" links
+      APPRISE_URLS: ${RECALL_APPRISE_URLS}            # e.g. ntfys://ntfy.example.com/recalls
+      # CHECK_CRON: "0 7 * * *"                       # default: every 24h + on startup
+      # MIN_NOTIFY_TIER: medium                       # low | medium | high
+      # AUTO_WRITEBACK_TIER: high                     # tag + maintenance entry in Homebox
+      # WRITEBACK: "true"
+      TZ: America/New_York
+    volumes:
+      - recall-checker-data:/data
+    ports:
+      - "8080:8080"                # or drop this and put it behind your reverse proxy
+
+volumes:
+  recall-checker-data:

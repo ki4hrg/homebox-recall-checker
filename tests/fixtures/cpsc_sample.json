@@ -1,0 +1,772 @@
+[
+ {
+  "RecallID": 11022,
+  "RecallNumber": "27024",
+  "RecallDate": "2026-10-15T00:00:00",
+  "Description": "This recall involves the Scotch\u2122 thermal laminator, model number TL1302Z.  The laminator is light gray/white with gray accents and the word \"Scotch\" is printed in gray on the front. The laminating slot is approximately 13 inches wide, and the machine has a carrying handle on the right side of the machine when viewing from the front. The model number TL1302Z is located on the sticker on the bottom of the laminator and can also be found on the product packaging.",
+  "URL": "https://cpsc.gov/Recalls/2027/3M-Company-Recalls-ScotchTM-Thermal-Laminators-Due-to-Risk-of-Serious-Injury-or-Death-from-Fire-Hazard",
+  "Title": "3M Company Recalls Scotch\u2122 Thermal Laminators Due to Risk of Serious Injury or Death from Fire Hazard",
+  "ConsumerContact": "3M Company toll-free at 800-772-4337 from 8 a.m. to 4:30 p.m. CT Monday through Friday, online at https://www.scotchbrand.com/3M/en_US/scotch-brand/tl1302Z-laminator-recall/ or www.scotchbrand.com and click on \"Recall Information\" at the top of the page for more information.",
+  "LastPublishDate": "2026-10-15T00:00:00",
+  "Products": [
+   {
+    "Name": "Scotch\u2122 Thermal Laminators",
+    "Description": "",
+    "Model": "",
+    "Type": "Business and Office Machines",
+    "CategoryID": "178",
+    "NumberOfUnits": "About 53,634"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/3M1.png",
+    "Caption": "Recalled Scotch\u2122 Thermal Laminator model number TL1302Z"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/3M2.png",
+    "Caption": "Recalled Scotch\u2122 Thermal Laminator package"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "The firm has received 63 reports of the laminators smoking, melting and overheating, including five reports of the laminators catching fire and one report of minor property damage. No injuries have been reported."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "Sold Online At:\nAmazon.com from June 2024 through September 2026 for between $44 and $56.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [
+   {
+    "Name": "3M Company, of St. Paul, Minnesota",
+    "CompanyID": ""
+   }
+  ],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The recalled thermal laminators can overheat, posing a fire hazard.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should stop using and unplug the recalled thermal laminators immediately and contact 3M Company to receive a full refund. Consumers will be asked to fill out the online recall registration form at https://www.scotchbrand.com/3M/en_US/scotch-brand/tl1302Z-laminator-recall/, confirm that their laminator is included in the recall and upload a photograph of the laminator with the unplugged power cord cut. The refund, in the form of a check, will be mailed to the consumer upon receipt of the completed form and confirmation that the laminator's power cord has been cut. Consumers should dispose of the recalled laminator in accordance with local and state laws governing electronics recycling."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   }
+  ]
+ },
+ {
+  "RecallID": 10451,
+  "RecallNumber": "26050",
+  "RecallDate": "2025-10-23T00:00:00",
+  "Description": "This recall involves the Scotch\u2122 Thermal Laminator, model TL909-50. The laminator is light gray/white with gray accents, and the word \"Scotch\" is printed in gray on the front. The laminating slot is approximately 9 inches wide. The model number and serial number are located on a sticker on the bottom of the laminator. Only units with serial numbers between 2406000001 and 2501001920 are included in this recall.",
+  "URL": "https://www.cpsc.gov/Recalls/2026/3M-Company-Recalls-Thermal-Laminators-Due-to-Overheating",
+  "Title": "3M Company Recalls Thermal Laminators Due to Overheating",
+  "ConsumerContact": "3M Company toll-free at 800-772-4337 from 8 a.m. to 4:30 p.m. CT Monday through Friday, by email through the \"Contact Us\" link on the Scotch Brand Website at https://www.scotchbrand.com/3M/en_US/scotch-brand/contact-us/ or online at https://www.scotchbrand.com/laminatorrecallTL909-50/ or www.scotchbrand.com and click on \"Recall Information\" at the top of the page for more information.",
+  "LastPublishDate": "2025-10-23T00:00:00",
+  "Products": [
+   {
+    "Name": "Scotch\u2122 brand TL909-50 thermal laminator",
+    "Description": "",
+    "Model": "",
+    "Type": "",
+    "CategoryID": "",
+    "NumberOfUnits": "About 13,440"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/laminator-1.png",
+    "Caption": "Recalled Scotch\u2122 brand TL909-50 thermal laminator"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "No incidents or injuries have been reported."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "In-store and online at Office Depot, Office Smart and School Specialty, Inc. from August 2024 through September 2025 for between $100 and $130.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [
+   {
+    "Name": "3M Company, of St. Paul, Minnesota",
+    "CompanyID": ""
+   }
+  ],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "Vietnam"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The recalled thermal laminators may overheat, posing a burn hazard to consumers.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should immediately stop using and unplug the recalled laminators and contact the 3M Company to receive a full refund. Consumers will be asked to fill out a short form, confirm that their laminator is included in the recall, and upload a photograph of the machine with the unplugged power cord cut. The refund will come in the form of a check mailed to the consumer upon receipt of the completed form and confirmation that the machine's power cord has been cut."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   }
+  ]
+ },
+ {
+  "RecallID": 8297,
+  "RecallNumber": "18135",
+  "RecallDate": "2018-04-03T00:00:00",
+  "Description": "This recall involves Scotch thermal laminators that are white with teal accents. They are used to laminate documents such as artwork and photos. The laminators have \"Scotch\" printed on the front. They measure 14 inches by 3.8 inches by 2.75 inches. The model number TL901C is printed on a sticker on the bottom of the laminator. Only laminators with model number TL901C and teal accents are included in the recall. The two side ends, the bottom and the reverse switch on top of the laminators are teal.",
+  "URL": "https://www.cpsc.gov/Recalls/2018/Scotch-Thermal-Laminators-Recalled-by-3M-Due-to-Burn-Hazard",
+  "Title": "Scotch Thermal Laminators Recalled by 3M Due to Burn Hazard",
+  "ConsumerContact": "3M at 800-772-4337 from 8 a.m. to 4:30 p.m. CT Monday through Friday or online at www.ScotchBrand.com and click on \u201cTL901C-T Laminator Recall\u201d for more information.",
+  "LastPublishDate": "2018-04-03T00:00:00",
+  "Products": [
+   {
+    "Name": "Scotch\u2122 thermal laminators",
+    "Description": "",
+    "Model": "",
+    "Type": "",
+    "CategoryID": "",
+    "NumberOfUnits": "About 395,000 (In addition, about 130 were sold in Canada)"
+   }
+  ],
+  "Inconjunctions": [
+   {
+    "URL": "http://healthycanadians.gc.ca/recall-alert-rappel-avis/hc-sc/2018/66396r-eng.php"
+   }
+  ],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/pic1_18.jpg",
+    "Caption": ""
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/pic2_12.jpg",
+    "Caption": ""
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "3M has received 10 reports of the laminators overheating and causing deformation of the bottom of the plastic enclosures. No injuries have been reported."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "J.A. Riollano and Sam's Club stores in Puerto Rico and online at Amazon.com from July 2015 through March 2018 for about $20.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [
+   {
+    "Name": "3M Company, of St. Paul, Minn.",
+    "CompanyID": ""
+   }
+  ],
+  "Distributors": [
+   {
+    "Name": "3M Company, of St. Paul, Minn.",
+    "CompanyID": ""
+   }
+  ],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The plastic enclosure can overheat, posing a burn hazard.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should immediately stop using the recalled laminators and contact 3M for a full refund."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   }
+  ]
+ },
+ {
+  "RecallID": 7779,
+  "RecallNumber": "16204",
+  "RecallDate": "2016-06-28T00:00:00",
+  "Description": "The recalled children's chests and dressers are taller than 23.5 inches and adult chests and dressers are taller than 29.5 inches. The 29 million units of recalled chests and dressers include: MALM 3-drawer, 4-drawer, 5-drawer and three 6-drawer models and other children's and adult chests and dressers. The MALM chests and dressers are constructed of particleboard or fiberboard and are white, birch (veneer), medium brown, black-brown, white stained oak (veneer), oak (veneer), pink, turquoise, gray, gray-turquoise, lilac, green, brown stained ash (veneer), and black. A 5-digit supplier number, 4-digit date stamp, IKEA logo, country of origin and \"MALM\" are printed on the underside of the top panel or inside the side panel. Since 1996, IKEA chests and dressers have been labeled to identify IKEA, the model name and the manufacturing date.",
+  "URL": "https://www.cpsc.gov/Recalls/2016/Following-an-Additional-Child-Fatality-IKEA-Recalls-29-Million-MALM-and-Other-Models-of",
+  "Title": "Following an Additional Child Fatality, IKEA Recalls 29 Million MALM and Other Models of Chests and Dressers Due to Serious Tip-Over Hazard; Consumers Urged to Anchor Chests and Dressers or Return for Refund",
+  "ConsumerContact": "IKEA toll-free at 866-856-4532 anytime or online at www.IKEA-USA.com/recallchestsanddressers or www.IKEA-USA.com and click on Product Recall for more information on how to receive a refund or free wall-anchoring repair kit.",
+  "LastPublishDate": "2016-07-14T00:00:00",
+  "Products": [
+   {
+    "Name": "Children's and adult chests and dressers",
+    "Description": "",
+    "Model": "",
+    "Type": "Dressers, Desks, Chests and Buffets",
+    "CategoryID": "67769",
+    "NumberOfUnits": "About 8 million MALM chests and dressers and 21 million additional children's and adult chests and dressers in the U.S. (In addition, 6.6 million were sold in Canada)"
+   }
+  ],
+  "Inconjunctions": [
+   {
+    "URL": "http://healthycanadians.gc.ca/recall-alert-rappel-avis/hc-sc/2016/59040r-eng.php"
+   }
+  ],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204a.jpg",
+    "Caption": "Recalled IKEA MALM 3-drawer dresser"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204b.jpg",
+    "Caption": "Recalled IKEA MALM 4-drawer dresser"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204c.jpg",
+    "Caption": "Recalled IKEA MALM 5-drawer dresser"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204d.jpg",
+    "Caption": "Recalled IKEA MALM 6-drawer dresser"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204e.jpg",
+    "Caption": "Recalled IKEA MALM 6-drawer dresser"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Recall.2016.16204.16204f.jpg",
+    "Caption": "Recalled IKEA MALM 6-drawer dresser"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "In February 2014, a 2-year-old boy from West Chester, Pa. died after a 6-drawer MALM chest tipped over and fatally pinned him against his bed. In June 2014, a 23-month-old boy from Snohomish, Wash. died after he became trapped beneath a 3-drawer MALM chest that tipped over. In a February 2016 incident, a 22-month-old boy from Apple Valley, Minn. died when a MALM 6-drawer chest fell on top of him. None of the chests or dressers in the above-listed incidents had been anchored to the wall. In addition to the three deaths, IKEA received reports of 41 tip-over incidents involving the MALM chests and dressers, resulting in 17 injuries to children between the ages of 19 months and 10 years old."
+   }
+  ],
+  "Manufacturers": [
+   {
+    "Name": "IKEA North America, of Conshohocken, Pa.",
+    "CompanyID": ""
+   }
+  ],
+  "Retailers": [],
+  "Importers": [],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The recalled chests and dressers are unstable if they are not properly anchored to the wall, posing a serious tip-over and entrapment hazard that can result in death or injuries to children.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should immediately stop using any recalled chest and dresser that is not properly anchored to the wall and place it into an area that children cannot access. Contact IKEA for a choice between two options: refund or a free wall-anchoring repair kit. Consumers are entitled to a full refund for chests and dressers manufactured between January 2002 and June 2016. Consumers with chests and dressers manufactured prior to January 2002 will be eligible for a partial store credit. Consumers can order a free wall-anchoring repair kit. Consumers can install the kit themselves or IKEA will provide a one-time, free in-home installation service, upon request. Consumers can reorder the kits throughout the life of their chest and dresser."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   },
+   {
+    "Option": "Repair"
+   }
+  ]
+ },
+ {
+  "RecallID": 8532,
+  "RecallNumber": "19105",
+  "RecallDate": "2019-04-12T00:00:00",
+  "Description": "This recall involves all Rock 'n Play Sleepers.",
+  "URL": "https://www.cpsc.gov/Recalls/2019/Fisher-Price-Recalls-Rock-n-Play-Sleepers-Due-to-Reports-of-Deaths",
+  "Title": "Fisher-Price Recalls Rock 'n Play Sleepers Due to Reports of Deaths",
+  "ConsumerContact": "Fisher-Price online at www.service.mattel.com and click on \u201cRecalls & Safety Alerts\u201d or at 866-812-6518 from 9 a.m. to 6 p.m. ET Monday through Friday for more information.",
+  "LastPublishDate": "2019-04-12T00:00:00",
+  "Products": [
+   {
+    "Name": "All Models of Rock 'n Play Sleeper",
+    "Description": "",
+    "Model": "",
+    "Type": "",
+    "CategoryID": "",
+    "NumberOfUnits": "About 4.7 million products"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Fisher-Price Rock N Play_1.jpg",
+    "Caption": "Recalled Fisher-Price Rock 'n Play sleeper"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "Since the 2009 product introduction, over 30 infant fatalities have occurred in Rock 'n Play Sleepers, after the infants rolled over while unrestrained, or under other circumstances."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "Major retailers for approximately $40 to $149.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [
+   {
+    "Name": "Fisher-Price, of East Aurora, N.Y.",
+    "CompanyID": ""
+   }
+  ],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "Infant fatalities have occurred in Rock 'n Play Sleepers, after the infants rolled from their back to their stomach or side while unrestrained, or under other circumstances.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should immediately stop using the product and contact Fisher-Price for a refund or voucher."
+   }
+  ],
+  "RemedyOptions": []
+ },
+ {
+  "RecallID": 2582,
+  "RecallNumber": "04094",
+  "RecallDate": "2004-03-04T00:00:00",
+  "Description": "There are two types of heaters involved in this recall. The recalled model 5500 heater is an oscillating ceramic heater with dark gray vents, surrounded by a bronze trim. The model number is located on a label under the round base. The Model 5700 heater is an oil filled radiator-type heater. The model number is located on a label on the side of the heater, near the right front wheel. The name \"Lasko\" is printed near the top of both heaters.",
+  "URL": "https://www.cpsc.gov/Recalls/2004/CPSC-Lasko-Products-Inc-Announce-Recall-of-Space-Heaters-",
+  "Title": "CPSC, Lasko Products Inc. Announce Recall of Space Heaters",
+  "ConsumerContact": "Consumers can call Lasko Products toll-free at (800) 233-6373 anytime or visit the firm's website at www.laskoproducts.com/recall_heaters.html for more information and to determine if their heater is involved in the recall.",
+  "LastPublishDate": "2025-01-29T00:00:00",
+  "Products": [
+   {
+    "Name": "Space Heaters",
+    "Description": "",
+    "Model": "",
+    "Type": "Electric Heaters",
+    "CategoryID": "1924",
+    "NumberOfUnits": "186,000"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/lasko-5500.jpg",
+    "Caption": "Recalled Lasko Space Heater, Model 5500"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/lasko-5700.jpg",
+    "Caption": "Recalled Lasko Space Heater, Model 5700"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "Four consumers reported burned and detached power cords. No injuries reported."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "Retailers such as Dollar General and Sam's Club stores nationwide, from July 2001 through December 2003, for between $40 and $50.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [],
+  "Distributors": [
+   {
+    "Name": "Lasko Products Inc., of West Chester, Pa.",
+    "CompanyID": ""
+   }
+  ],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   },
+   {
+    "Country": "Portugal"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The power cord connection can overheat and cause the cord to separate from the space heater. This poses a fire, burn and shock hazard.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should stop using the heaters, unplug them and contact Lasko Products for instructions on returning the heater to receive a free replacement heater or a product of similar value."
+   }
+  ],
+  "RemedyOptions": []
+ },
+ {
+  "RecallID": 11031,
+  "RecallNumber": "27042",
+  "RecallDate": "2026-10-22T00:00:00",
+  "Description": "This recall involves Bamamon LED Projecting Finger Light toys which contain three button cells batteries. The finger lights come in 32 pieces in a box in red, orange, blue, black, purple, clear, green and yellow. The finger lights project eight space themed patterns such as astronauts, rockets, UFO, galaxy and solar systems printed on labels located on the front of the package.  ",
+  "URL": "https://www.cpsc.gov/Recalls/2027/BAMAMON-Recalls-LED-Projecting-Finger-Light-Toys-Due-to-Risk-of-Serious-Injury-or-Death-from-Battery-Ingestion-Violate-Mandatory-Standard-for-Toys",
+  "Title": "BAMAMON Recalls LED Projecting Finger Light Toys Due to Risk of Serious Injury or Death from Battery Ingestion; Violate Mandatory Standard for Toys",
+  "ConsumerContact": "Bamamon by email at bamamonproductrecall@outlook.com.",
+  "LastPublishDate": "2026-10-22T00:00:00",
+  "Products": [
+   {
+    "Name": "Bamamon LED Projecting Finger Light Toys",
+    "Description": "",
+    "Model": "",
+    "Type": "Toys",
+    "CategoryID": "1386",
+    "NumberOfUnits": "About 6,533"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/BAMAMON1.png",
+    "Caption": "Recalled Bamamon LED Projecting Finger Lights Package"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/BAMAMON2.jpg",
+    "Caption": "Recalled Bamamon LED Projecting Finger Lights"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/BAMAMON3.jpg",
+    "Caption": "Recalled Bamamon LED Projecting Finger Lights"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "None reported."
+   }
+  ],
+  "Manufacturers": [],
+  "Retailers": [
+   {
+    "Name": "Sold At:\nAmazon.com from March 2025 through August 2026 for about $13 to $14.",
+    "CompanyID": ""
+   },
+   {
+    "Name": "Shenzhen Maiduoduo Trading Technology Co., Ltd., dba Bamamon, of China",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "None reported.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should stop using the toys immediately and contact Bamamon. Consumers will be asked to email a photograph showing the product being properly disposed of in the trash to bamamonproductrecall@outlook.com."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   }
+  ]
+ },
+ {
+  "RecallID": 11029,
+  "RecallNumber": "27041",
+  "RecallDate": "2026-10-22T00:00:00",
+  "Description": "This recall involves Luminaires with certain adjustable tilt mounting arms manufactured between August 2019 to July 2020 and August 2024 to April 2026: AASP, AARP, AAWB, and AAWSC. The adjustable tilt arm mounts the RSX luminaire to a square pole, round pole, wall bracket or wall bracket with surface mount conduit. The arm mount allows the luminaire to be tilted from 0 degrees to 90 degrees above horizontal. Consumers should contact Lithonia Lighting to confirm their Luminaire with adjustable tilt mounting arms are included in the recall.",
+  "URL": "https://cpsc.gov/Recalls/2027/Lithonia-Lighting-Recalls-RSX-Luminaires-with-Adjustable-Tilt-Arm-Mountings-Due-to-Risk-of-Serious-Injury-from-Impact-Hazard",
+  "Title": "Lithonia Lighting Recalls RSX Luminaires with Adjustable Tilt Arm Mountings Due to Risk of Serious Injury from Impact Hazard",
+  "ConsumerContact": "Lithonia Lighting toll-free at 855-307-2454 between 8 a.m. and 5 p.m. ET Monday through Friday, online at  https://lithonia.acuitybrands.com/ and click on \"Recalls\" at the bottom of the page for more information.",
+  "LastPublishDate": "2026-10-22T00:00:00",
+  "Products": [
+   {
+    "Name": "Lithonia Lighting RSX Luminaires with AASP, AARP, AAWB, and AAWSC Adjustable Tilt Arm Mountings used for commercial outdoor lighting.",
+    "Description": "",
+    "Model": "",
+    "Type": "Electric Lighting Equipment, Not Specified",
+    "CategoryID": "273",
+    "NumberOfUnits": "About 11,532"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Lithonia1.jpg",
+    "Caption": "Recalled RSX Luminaire with an Adjustable Tilt Arm"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Lithonia2.png",
+    "Caption": "Recalled AASP Adjustable Arm Mounting (Square pole mount)"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Lithonia3.png",
+    "Caption": "Recalled AARP Adjustable Arm Mounting (Round pole mount)"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Lithonia4.png",
+    "Caption": "Recalled AAWB Adjustable Arm Mounting (Wall bracket)"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Lithonia5.png",
+    "Caption": "Recalled AAWSC Adjustable Arm Mounting (Wall bracket + conduit box)"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "The firm has received 13 reports of adjustable tilt arm mountings breaking. There have been four reports of the fixtures falling. No injuries have been reported."
+   }
+  ],
+  "Manufacturers": [
+   {
+    "Name": "Lithonia Lighting, of Atlanta, Georgia",
+    "CompanyID": ""
+   }
+  ],
+  "Retailers": [
+   {
+    "Name": "Sold At:\nCommercial distributors nationwide including Turtle & Hughes Inc. and Consolidated Electrical Distributors for commercial outdoor lighting applications from August 2019 to August 2026 for between $400 and $2200.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "United States"
+   },
+   {
+    "Country": "Mexico"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The knuckle of the recalled adjustable tilt arm mountings can fail, allowing the luminaire to fall from the mounting arm, posing a risk of serious injury due to impact hazard.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should keep clear of the area directly beneath the Luminaire and contact Lithonia Lighting to schedule a free repair. Lithonia Lighting will arrange for a qualified professional to replace the recalled adjustable tilt arm mount with a new complete adjustable arm assembly."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Repair"
+   }
+  ]
+ },
+ {
+  "RecallID": 10930,
+  "RecallNumber": "26702",
+  "RecallDate": "2026-08-13T00:00:00",
+  "Description": "This recall involves Hampton Bay Halwin 52-inch Indoor/Outdoor Ceiling fans with model numbers AK396H-MBK and AK396H-BN. The recalled fans have an adjustable white LED light, come in a matte black or brushed nickel finish, and include a remote. UPCs \"840059614922\" or \"840059615370\" are located on the product packaging, the rating label located on the inside of fan mounting plate (same label as the serial number), and the warranty registration card packed with the Use and Care Guide.",
+  "URL": "https://www.cpsc.gov/Recalls/2026/Hampton-Bay-Halwin-52-Inch-Ceiling-Fans-Recalled-Due-to-Impact-and-Injury-Hazards-Manufactured-by-Youngo-Limited",
+  "Title": "Hampton Bay Halwin 52-Inch Ceiling Fans Recalled Due to Impact and Injury Hazards; Manufactured by Youngo Limited",
+  "ConsumerContact": "Youngo toll-free at 877-902-5588 from 9 a.m. to 5 p.m. PT Monday through Friday, by email at halwin-recall@tal-usa.com or online at www.tal-usa.com/halwin-recall or www.tal-usa.com and click on \"Product Recalls\" at the top of the page for more information.",
+  "LastPublishDate": "2026-08-14T00:00:00",
+  "Products": [
+   {
+    "Name": "Hampton Bay Halwin 52-inch Indoor/Outdoor Ceiling Fans",
+    "Description": "",
+    "Model": "",
+    "Type": "",
+    "CategoryID": "",
+    "NumberOfUnits": "About 9,460"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Picture11_11.png",
+    "Caption": "Recalled Hampton Bay Halwin 52-inch Indoor/Outdoor Matte Black Ceiling Fan with adjustable white LED light and remote"
+   },
+   {
+    "URL": "https://www.cpsc.gov/s3fs-public/Picture12_9.png",
+    "Caption": "Recalled Hampton Bay Halwin 52-inch Indoor/Outdoor Brushed Nickel Ceiling Fan with adjustable white LED light and remote"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "Youngo has received 11 reports of incidents involving the fan blades breaking or separating from the fan motor flywheel. No injuries have been reported."
+   }
+  ],
+  "Manufacturers": [
+   {
+    "Name": "Youngo Limited, of Huizhou, China",
+    "CompanyID": ""
+   }
+  ],
+  "Retailers": [
+   {
+    "Name": "The Home Depot stores nationwide and online from January 2023 through October 2025 for about $180.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "China"
+   },
+   {
+    "Country": "China"
+   }
+  ],
+  "ProductUPCs": [
+   {
+    "UPC": "840059614922"
+   },
+   {
+    "UPC": "840059615370"
+   }
+  ],
+  "Hazards": [
+   {
+    "Name": "The fan blades can separate from the fan motor flywheel, posing impact and injury hazards to consumers.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should stop using the recalled ceiling fans immediately and contact Youngo for either a full refund by ACH payment or store credit in the form of a Home Depot gift card. To receive either option, consumers should contact Youngo with proof of purchase or a photograph of the serial number (located inside the mounting plate of the ceiling fan) and a photo showing proof of disposal of the product. Alternatively, consumers may return the product to a Home Depot retail store for full store credit in the form of a Home Depot gift card or refund back to the card used for purchase."
+   }
+  ],
+  "RemedyOptions": [
+   {
+    "Option": "Refund"
+   }
+  ]
+ },
+ {
+  "RecallID": 4162,
+  "RecallNumber": "08143",
+  "RecallDate": "2007-12-20T00:00:00",
+  "Description": "This recall involves DEWALT individual cordless drills listed below: Model Number Description Date Codes DC920 Heavy-Duty XRP\u2122 1/2\" (13mm) 18 Volt Cordless Drill/Driver 200723 through 200742 DC930 Heavy-Duty XRP\u2122 1/2\" (13mm) 14.4 Volt Cordless Drill/Driver 200625 through 200746 DC935 Heavy-Duty XRP\u2122 1/2\" (13mm) 14.4 Volt Cordless Hammerdrill/Drill/Driver 200627 through 200746 DC936 Heavy-Duty XRP\u2122 1/2\" (13mm) 14.4 Volt Cordless Hammerdrill/Drill/Driver 200635 through 200746 DC940 Heavy-Duty XRP\u2122 1/2\" (13mm) 12 Volt Cordless Drill/Driver 200635 through 200746 The model number is printed on a sticker on the side of the unit. The date code is embossed on the bottom of the unit. Units stamped with an \"M\" following the date code have been repaired and are not included in this recall. The packaging of repaired drills has a green dot sticker near the UPC label.",
+  "URL": "https://www.cpsc.gov/Recalls/2007/DeWALT-Recalls-Cordless-Drills-due-to-Fire-Hazard",
+  "Title": "DeWALT Recalls Cordless Drills due to Fire Hazard",
+  "ConsumerContact": "Call DEWALT toll-free at (888) 742-9168 between 8 a.m. and 5 p.m. ET Monday through Friday or visit firm's Web site at www.DEWALT.com",
+  "LastPublishDate": "2014-05-23T00:00:00",
+  "Products": [
+   {
+    "Name": "DEWALT Cordless Drills",
+    "Description": "",
+    "Model": "",
+    "Type": "Drills & Bits",
+    "CategoryID": "1917",
+    "NumberOfUnits": "About 346,000"
+   }
+  ],
+  "Inconjunctions": [],
+  "Images": [
+   {
+    "URL": "https://www.cpsc.gov/~/link/a7d2306d818b436e9aa228390c9ec009.jpg",
+    "Caption": "Recalled Drill and details"
+   }
+  ],
+  "Injuries": [
+   {
+    "Name": "DEWALT has received 11 reports of trigger switches overheating. No injuries or property damage have been reported."
+   }
+  ],
+  "Manufacturers": [
+   {
+    "Name": "DEWALT Industrial Tool Company, of Towson, Md.",
+    "CompanyID": ""
+   }
+  ],
+  "Retailers": [
+   {
+    "Name": "Wholesale distributors and retailers from about June 2006 through December 2007 for between $180 and $280.",
+    "CompanyID": ""
+   }
+  ],
+  "Importers": [],
+  "Distributors": [],
+  "SoldAtLabel": null,
+  "ManufacturerCountries": [
+   {
+    "Country": "Mexico"
+   }
+  ],
+  "ProductUPCs": [],
+  "Hazards": [
+   {
+    "Name": "The trigger switch of the cordless drill can overheat, posing a fire hazard to consumers.",
+    "HazardType": "",
+    "HazardTypeID": ""
+   }
+  ],
+  "Remedies": [
+   {
+    "Name": "Consumers should stop using the drills immediately and contact DEWALT for the location of the nearest service center to receive a free inspection and, if necessary, free repair."
+   }
+  ],
+  "RemedyOptions": []
+ }
+]
