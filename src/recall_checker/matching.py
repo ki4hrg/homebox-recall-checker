@@ -8,7 +8,7 @@ pulled from free text. Signals, strongest first:
           or a model prefix/variant match with a brand match
   low     brand match plus overlapping product-name words
 
-An item purchased well after a recall was published is downgraded one tier.
+An item bought well after a recall, or before the affected units were made, is capped at low.
 """
 from __future__ import annotations
 
@@ -42,6 +42,8 @@ NAME_STOPWORDS = {
     "model", "recall", "recalls", "recalled", "due", "risk", "hazard", "injury", "serious",
     "death", "violate", "mandatory", "standard", "sold", "exclusively",
 }
+# Purchase dates are often approximate; allow this much before the first affected unit.
+MFG_SLACK = timedelta(days=30)
 UPC_FIELD_NAMES = re.compile(r"upc|ean|gtin|barcode|bar code", re.I)
 
 
@@ -49,9 +51,16 @@ def norm_model(s: str) -> str:
     return _NON_ALNUM.sub("", _SYMBOLS.sub("", s).upper())
 
 
+# Measurements and ratings ("40V", "4.0Ah" -> "40AH", "1200W", "12IN"), not model numbers.
+_SPEC = re.compile(
+    r"^\d+(V|VOLT|AH|MAH|A|AMP|W|WH|KW|HP|BTU|CC|IN|INCH|FT|MM|CM|M|LB|LBS|OZ|QT|GAL|L|ML|"
+    r"GB|TB|MB|HZ|K|P|MP|PK|PC|PCS|CT|X|S)$"
+)
+
+
 def is_model_like(norm: str) -> bool:
     """A normalized token specific enough to count as a model number."""
-    if len(norm) < 4 or not any(c.isdigit() for c in norm):
+    if len(norm) < 4 or not any(c.isdigit() for c in norm) or _SPEC.match(norm):
         return False
     has_alpha = any(c.isalpha() for c in norm)
     # Bare numbers collide with years, unit counts, phone numbers, etc.
@@ -77,10 +86,12 @@ def _stem(w: str) -> str:
 
 
 def name_tokens(text: str, exclude: set[str] = frozenset()) -> set[str]:
-    words = _WORD.findall(_SYMBOLS.sub("", text).lower())
+    # Drop decimal specs whole first ("4.0Ah" would otherwise leave "0ah").
+    text = re.sub(r"\b\d+(?:\.\d+)?[a-z]*\b", " ", _SYMBOLS.sub("", text).lower())
+    words = _WORD.findall(text)
     return {
         _stem(w) for w in words
-        if len(w) >= 3 and w not in NAME_STOPWORDS and w not in exclude and not w.isdigit()
+        if len(w) >= 3 and w not in NAME_STOPWORDS and w not in exclude
     }
 
 
@@ -90,10 +101,14 @@ def model_tokens(text: str) -> set[str]:
     raw = [t for t in raw if t]
     out = {t for t in raw if is_model_like(t)}
     for a, b in zip(raw, raw[1:], strict=False):
+        # Join a short letter prefix to a number ("TL 1302Z", "KB 440-03"), but never a
+        # word to a spec ("Kobalt 40v", "6.0Ah Battery") or two loose codes ("40 AH").
+        if not (a.isalpha() and len(a) <= 4 and any(c.isdigit() for c in b)):
+            continue
+        if _SPEC.match(b) or b.isalpha():
+            continue
         joined = a + b
-        if len(joined) <= 20 and is_model_like(joined) and (
-            any(c.isdigit() for c in a) or any(c.isdigit() for c in b)
-        ):
+        if len(joined) <= 20 and is_model_like(joined):
             out.add(joined)
     return out
 
@@ -135,6 +150,8 @@ class _Prepared:
     brands: list[tuple[str, ...]]
     words: set[str]           # lowercase words in title + product names (for brand-in-title)
     product_terms: set[str]   # stemmed product-name words for the low tier
+    struct: dict[str, str]    # normalized -> original, for source-provided model/part numbers
+    lists_models: bool        # recall enumerates affected models (in any form)
 
 
 class RecallIndex:
@@ -152,6 +169,7 @@ class RecallIndex:
     def _add(self, r: Recall) -> None:
         names = " ".join(r.product_names)
         text = f"{r.title}\n{names}\n{r.description}"
+        ptitle = product_title(r.title)
         brands = [b for b in (brand_tokens(x) for x in r.brands) if b]
         p = _Prepared(
             recall=r,
@@ -159,11 +177,13 @@ class RecallIndex:
             models=model_tokens(text),
             upcs={norm_upc(u) for u in r.upcs if norm_upc(u)},
             brands=brands,
-            words=set(_WORD.findall(f"{r.title} {names}".lower())),
-            product_terms=name_tokens(f"{r.title} {names} {' '.join(r.product_types)}"),
+            words=set(_WORD.findall(f"{ptitle} {names}".lower())),
+            product_terms=name_tokens(f"{ptitle} {names} {' '.join(r.product_types)}"),
+            struct={n: m for m in r.models if len(n := norm_model(m)) >= 3},
+            lists_models=bool(r.models) or bool(_MODEL_WORD.search(text)),
         )
         self.prepared[r.key] = p
-        for m in p.models:
+        for m in p.models | set(p.struct):
             self.by_model[m].add(r.key)
         for u in p.upcs:
             self.by_upc[u].add(r.key)
@@ -171,6 +191,18 @@ class RecallIndex:
             self.by_word[b[0]].add(r.key)
         for w in p.words:
             self.by_word[w].add(r.key)
+
+
+_MODEL_WORD = re.compile(r"\bmodel", re.I)
+_TITLE_TAIL = re.compile(r"[;,]?\s*\b(?:due\s+to|because|after|following)\b.*$", re.I)
+_SOLD_CLAUSE = re.compile(
+    r"[;,]?\s*\bsold\s+(?:exclusively\s+)?(?:at|on|by|through|online)\b"
+    r".*?(?=\s+(?:recalled|due\s+to)\b|;|$)", re.I)
+
+
+def product_title(title: str) -> str:
+    """The part of a recall title that names the product: no hazard tail, no retailer."""
+    return _SOLD_CLAUSE.sub("", _TITLE_TAIL.sub("", title)).strip()
 
 
 def _item_upcs(item: dict) -> set[str]:
@@ -188,13 +220,12 @@ def _item_upcs(item: dict) -> set[str]:
 
 
 def _item_models(item: dict) -> set[str]:
-    models: set[str] = set()
     m = norm_model(item.get("modelNumber") or "")
-    if m and (is_model_like(m) or len(m) >= 4):
-        models.add(m)
-    # Model numbers often get typed into the name ("Scotch TL1302Z Laminator").
-    models |= {t for t in model_tokens(item.get("name") or "") if any(c.isalpha() for c in t)}
-    return models
+    if m:
+        # An explicit model number is authoritative; the name only adds noise ("40v", "4.0Ah").
+        return {m} if (is_model_like(m) or len(m) >= 4) else set()
+    # No model recorded: it's often typed into the name instead ("Scotch TL1302Z Laminator").
+    return {t for t in model_tokens(item.get("name") or "") if any(c.isalpha() for c in t)}
 
 
 def _item_product_line(item: dict) -> str | None:
@@ -203,6 +234,16 @@ def _item_product_line(item: dict) -> str | None:
     if len(raw) >= 4 and raw.replace(" ", "").isalpha() and raw.lower() not in NAME_STOPWORDS:
         return raw
     return None
+
+
+def _struct_hit(item: dict, struct: dict[str, str]) -> tuple[str, str] | None:
+    """Match source-provided models: exact model number, else the model inside the item name."""
+    model = norm_model(item.get("modelNumber") or "")
+    if model in struct:
+        return model, "model"
+    haystack = norm_model(f"{item.get('name') or ''} {item.get('modelNumber') or ''}")
+    inside = [n for n in struct if len(n) >= 5 and n in haystack]
+    return (max(inside, key=len), "name") if inside else None
 
 
 def _brand_matches(item_brand: tuple[str, ...], recall_brand: tuple[str, ...]) -> bool:
@@ -282,8 +323,31 @@ class Matcher:
 
         brand_reason = self._brand_hit(item, p)
 
+        if p.struct and (hit := _struct_hit(item, p.struct)):
+            norm, how = hit
+            original = p.struct[norm]
+            # A listed model/part number is far stronger evidence than one found in prose,
+            # but short or bare-number models still need the brand to back them up. A
+            # digit-free "model" found in a name is a product line or just a product word
+            # (NHTSA lists GE's as "AIR CONDITIONER"): brand required, and medium at most.
+            coded = any(c.isdigit() for c in norm)
+            if how == "name" and not coded:
+                t, s = (Tier.medium, 2.4) if brand_reason else (None, 0.0)
+            elif brand_reason:
+                t, s = Tier.high, 3.6
+            elif (how == "model" and is_model_like(norm)) or (how == "name" and len(norm) >= 8):
+                t, s = Tier.medium, 2.6
+            else:
+                t, s = None, 0.0
+            if t is not None:
+                where = "model number" if how == "model" else "name"
+                evidence.append(Evidence(
+                    "model", f"Item {where} matches recalled model/part “{original}”"))
+                if tier is None or t > tier:
+                    tier, score = t, s
+
         exact = sorted(models & p.models)
-        if exact:
+        if exact and not any(e.signal == "model" for e in evidence):
             model = max(exact, key=len)
             evidence.append(Evidence("model", f"Model {model} appears in recall",
                                      snippet(p.text, model)))
@@ -328,9 +392,11 @@ class Matcher:
                     evidence.append(Evidence(
                         "name", f"Product words in common: {', '.join(sorted(shared))}"))
                     ratio = len(shared) / max(len(item_terms), 1)
-                    # Every distinctive word of the item name (at least two) is in the recall.
-                    # ...unless both sides list model numbers and none of them agreed.
-                    strong = ratio == 1.0 and len(shared) >= 2 and not (models and p.models)
+                    # Every distinctive word of the item name (at least two) is in the recall,
+                    # unless we know the item's model and the recall lists models without it.
+                    has_model = bool(norm_model(item.get("modelNumber") or ""))
+                    strong = (ratio == 1.0 and len(shared) >= 2
+                              and not ((has_model or models) and p.lists_models))
                     tier = Tier.medium if strong else Tier.low
                     score = (2.0 if strong else 1.0) + ratio * 0.5
 
@@ -338,18 +404,21 @@ class Matcher:
             return None
 
         purchased = item.get("purchaseDate")
-        if purchased and r.recall_date:
-            try:
-                bought = date.fromisoformat(purchased[:10])
-            except ValueError:
-                bought = None
-            if bought and bought > r.recall_date + self.grace:
-                evidence.append(Evidence(
-                    "purchase-date",
-                    f"Purchased {bought} — more than {self.grace.days} days after the "
-                    f"recall ({r.recall_date}); likely a post-recall unit"))
-                if tier > Tier.low:
-                    tier = Tier(tier - 1)
-                score -= 1.0
+        try:
+            bought = date.fromisoformat(purchased[:10]) if purchased else None
+        except ValueError:
+            bought = None
+        if bought and r.manufactured_from and bought < r.manufactured_from - MFG_SLACK:
+            evidence.append(Evidence(
+                "purchase-date",
+                f"Purchased {bought}, before affected units were made "
+                f"({r.manufactured_from} to {r.manufactured_to or '?'})"))
+            tier, score = Tier.low, min(score, 1.0) - 0.5
+        elif bought and r.recall_date and bought > r.recall_date + self.grace:
+            evidence.append(Evidence(
+                "purchase-date",
+                f"Purchased {bought} — more than {self.grace.days} days after the "
+                f"recall ({r.recall_date}); likely a post-recall unit"))
+            tier, score = Tier.low, min(score, 1.0) - 0.5
 
         return Match(r.key, tier, round(score, 3), evidence)

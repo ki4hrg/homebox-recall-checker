@@ -21,6 +21,11 @@ _RECALLED_BY = re.compile(r"\bRecalled\s+by\s+(.+?)(?:\s+(?:Due|for|Because)\b|[
 # ", of Atlanta, Georgia" / ", of China" / " dba Foo"
 _COMPANY_LOCATION = re.compile(r",?\s+of\s+[A-Z][\w .,'-]*$")
 _SOLD_AT = re.compile(r"^\s*sold\s+(at|exclusively|online|by)\b", re.I)
+# Retailer entries are often sentences: "Online at Amazon.com from August 2024 ... for $90."
+_RETAIL_SENTENCE = re.compile(
+    r"\$|\bnationwide\b|\bonline\b|\bstores?\b|\bfrom\s+[A-Z][a-z]+\s+\d{4}")
+# "... Sold Exclusively at Lowe's Stores" inside a title
+_TITLE_SOLD = re.compile(r"\s+sold\s+(?:exclusively\s+)?(?:at|on|by|through)\b.*$", re.I)
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -39,7 +44,7 @@ def _names(entries: list[dict] | None, key: str = "Name") -> list[str]:
 def _clean_company(name: str) -> list[str]:
     """'Foo Co., Ltd., dba Bamamon, of China' -> ['Foo Co., Ltd.', 'Bamamon']."""
     name = name.split("\n")[0].strip()
-    if not name or _SOLD_AT.match(name):
+    if not name or _SOLD_AT.match(name) or _RETAIL_SENTENCE.search(name):
         return []
     name = _COMPANY_LOCATION.sub("", name).strip(" ,")
     parts = re.split(r",?\s+(?:dba|d/b/a|doing business as)\s+", name, flags=re.I)
@@ -53,8 +58,8 @@ def extract_brands(raw: dict) -> list[str]:
     if by:
         brands.extend(_clean_company(by.group(1)))
     m = _TITLE_BRAND.match(title)
-    if m and m.group(1).strip():
-        brands.append(m.group(1).strip(" ,"))
+    if m and (brand := _TITLE_SOLD.sub("", m.group(1)).strip(" ,;")):
+        brands.append(brand)
     for key in ("Manufacturers", "Importers", "Distributors", "Retailers"):
         for n in _names(raw.get(key)):
             brands.extend(_clean_company(n))
@@ -92,6 +97,7 @@ def normalize(raw: dict) -> Recall:
 
 class CPSCSource:
     name = "cpsc"
+    parser_version = 2  # 2: retailer sentences and "Sold exclusively at" no longer brands
 
     def __init__(self, base_url: str, client: httpx.Client | None = None):
         self.base_url = base_url

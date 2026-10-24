@@ -9,9 +9,25 @@ from .db import DB
 from .homebox import HomeboxClient
 from .notify.apprise_ import AppriseNotifier
 from .runner import Runner
+from .sources.base import RecallSource
 from .sources.cpsc import CPSCSource
+from .sources.nhtsa import NHTSASource
 
 log = logging.getLogger("recall_checker")
+
+
+def build_sources(s: Settings) -> list[RecallSource]:
+    sources: list[RecallSource] = []
+    for name in s.source_names():
+        if name == "cpsc":
+            sources.append(CPSCSource(s.cpsc_base_url))
+        elif name == "nhtsa":
+            sources.append(NHTSASource(s.nhtsa_type_set(), s.nhtsa_flat_file_url))
+        else:
+            sys.exit(f"Unknown recall source {name!r} in RECALL_SOURCES (expected cpsc, nhtsa)")
+    if not sources:
+        sys.exit("RECALL_SOURCES is empty")
+    return sources
 
 
 def build_runner(s: Settings) -> Runner:
@@ -20,7 +36,7 @@ def build_runner(s: Settings) -> Runner:
     return Runner(
         settings=s,
         db=DB(s.db_path),
-        source=CPSCSource(s.cpsc_base_url),
+        sources=build_sources(s),
         homebox=HomeboxClient(s.homebox_url, s.homebox_token),
         notifier=AppriseNotifier(s.apprise_url_list(), s.apprise_config),
     )

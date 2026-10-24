@@ -62,6 +62,9 @@
     <dl>
       <dt>Title</dt><dd>{{ r.title }}</dd>
       <dt>Date</dt><dd>{{ r.recall_date }}</dd>
+      {% if r.kind %}<dt>Type</dt><dd>{{ r.kind|capitalize }}</dd>{% endif %}
+      {% if r.manufactured_from or r.manufactured_to %}<dt>Made</dt><dd>{{ r.manufactured_from or "?" }} to {{ r.manufactured_to or "?" }}</dd>{% endif %}
+      {% if r.models %}<dt>Models / parts</dt><dd>{{ r.models|join(", ") }}</dd>{% endif %}
       {% if r.brands %}<dt>Firms</dt><dd>{{ r.brands|join("; ") }}</dd>{% endif %}
       {% if r.units %}<dt>Units</dt><dd>{{ r.units }}</dd>{% endif %}
       {% if r.hazards %}<dt>Hazard</dt><dd>{{ r.hazards|join(" ") }}</dd>{% endif %}

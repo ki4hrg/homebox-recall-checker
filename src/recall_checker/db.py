@@ -85,23 +85,26 @@ class DB:
 
     # --- recalls ---
     def upsert_recalls(self, recalls: Iterable[Recall]) -> list[str]:
-        """Insert or update recalls; return keys that are new or whose publish date changed."""
+        """Insert or update recalls; return keys that are new or whose content changed.
+
+        Compares content rather than dates: NHTSA amends campaigns (adds models) without
+        moving any date, and a full-file source re-sends every recall on each sync."""
         changed: list[str] = []
         ts = now()
         with self.tx() as c:
             for r in recalls:
                 lpd = r.last_publish_date.isoformat() if r.last_publish_date else None
-                row = c.execute(
-                    "SELECT last_publish_date FROM recalls WHERE key=?", (r.key,)
-                ).fetchone()
-                if row is None or row["last_publish_date"] != lpd:
-                    changed.append(r.key)
+                data = json.dumps(r.to_dict())
+                row = c.execute("SELECT data FROM recalls WHERE key=?", (r.key,)).fetchone()
+                if row is not None and row["data"] == data:
+                    continue
+                changed.append(r.key)
                 c.execute(
                     "INSERT INTO recalls(key, source, last_publish_date, data, synced_at) "
                     "VALUES(?, ?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET "
                     "last_publish_date=excluded.last_publish_date, data=excluded.data, "
                     "synced_at=excluded.synced_at",
-                    (r.key, r.source, lpd, json.dumps(r.to_dict()), ts),
+                    (r.key, r.source, lpd, data, ts),
                 )
         return changed
 

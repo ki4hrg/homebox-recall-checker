@@ -101,17 +101,17 @@ def env(raw_recalls, tmp_path):
                             data_dir=tmp_path, public_url="http://checker.test",
                             min_notify_tier=Tier.medium, auto_writeback_tier=Tier.high)
         notifier = FakeNotifier()
-        runner = Runner(settings, DB(tmp_path / "t.db"), CPSCSource(CPSC),
+        runner = Runner(settings, DB(tmp_path / "t.db"), [CPSCSource(CPSC)],
                         HomeboxClient(HB, "hb_x"), notifier)
         yield runner, hb, notifier, router
 
 
-def test_full_cycle_notifies_and_writes_back_once(env):
+def test_full_cycle_notifies_and_writes_back_once(env, raw_recalls):
     runner, hb, notifier, _ = env
     res = runner.run()
     assert not res.errors
     assert res.items_total == 3              # archived item and location skipped
-    assert res.recalls_total == 10
+    assert res.recalls_total == len(raw_recalls)
     assert len(notifier.sent) == 1           # one batched message
     title, body = notifier.sent[0]
     assert "TL1302Z" not in title and "Laminator" in body and "Rock n Play" in body
@@ -184,3 +184,32 @@ def test_incremental_recall_sync_uses_last_publish_date(env):
     cpsc_calls = [c.request for c in router.calls if c.request.url.host == "cpsc.test"]
     assert "RecallDateStart" in cpsc_calls[0].url.params
     assert "LastPublishDateStart" in cpsc_calls[1].url.params
+
+
+class BrokenSource:
+    name = "broken"
+    parser_version = 1
+
+    def fetch(self, since):
+        raise RuntimeError("feed down")
+
+
+def test_failing_source_does_not_block_others(env, raw_recalls):
+    runner, _, notifier, _ = env
+    runner.sources.insert(0, BrokenSource())
+    res = runner.run()
+    assert any("broken sync: feed down" in e for e in res.errors)
+    assert res.recalls_total == len(raw_recalls)
+    assert notifier.sent                     # matching and alerts still happened
+
+
+def test_parser_version_bump_forces_full_refetch(env):
+    runner, _, _, router = env
+    runner.run()
+    runner.db.set_meta("cpsc_parser_version", "0")   # as if stored by an older release
+    runner.run()
+    runner.run()
+    cpsc = [c.request.url.params for c in router.calls if c.request.url.host == "cpsc.test"]
+    assert "RecallDateStart" in cpsc[0]              # first run: full
+    assert "RecallDateStart" in cpsc[1]              # version changed: full again
+    assert "LastPublishDateStart" in cpsc[2]         # then incremental

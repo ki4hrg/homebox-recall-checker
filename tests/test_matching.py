@@ -76,9 +76,57 @@ def test_generic_manufacturer_ignored(matcher):
     assert matcher.match_item(item(name="Space heater", manufacturer="Generic")) == []
 
 
-def test_purchase_after_recall_downgrades(matcher):
+
+
+# --- regressions from real Homebox data (all were false positives, all dismissed) ---
+
+KOBALT_ITEMS = [
+    item(name="Kobalt 4.0Ah 40v Battery", manufacturer="Kobalt", modelNumber="KB 440-03"),
+    item(name="Kobalt 40v 6.0Ah Battery", manufacturer="Kobalt", modelNumber="KB 640-03"),
+    item(name="Kobalt 40v Hedge Trimmer", manufacturer="Kobalt", modelNumber="KHT 1040B-03",
+         purchaseDate="2024-10-28"),
+    item(name="Kobalt 40v Lawn Mower", manufacturer="Kobalt", modelNumber="KPM 1040B-03",
+         purchaseDate="2025-04-08"),
+    item(name="Kobalt 40v String Trimmer", manufacturer="Kobalt", modelNumber="KST 1040B-03",
+         purchaseDate="2025-08-03"),
+]
+
+
+def test_specs_are_not_model_numbers():
+    assert model_tokens("Kobalt 4.0Ah 40v Battery") == set()
+    assert model_tokens("40 AH") == set()
+    assert "KB44003" in model_tokens("Battery: KB 440-03")
+
+
+def test_kobalt_tools_never_notify(matcher):
+    for it in KOBALT_ITEMS:
+        for m in matcher.match_item(it):
+            assert m.tier == Tier.low, (it["name"], m.recall_key, m.evidence)
+            assert not any(e.signal == "model" for e in m.evidence)
+
+
+def test_real_kobalt_model_still_matches(matcher):
+    # Greenworks' 24V recall lists KB 324-06; owning that battery must still be high.
+    it = item(name="Kobalt 24V 3.0Ah Battery", manufacturer="Kobalt", modelNumber="KB 324-06")
+    m = best(matcher, it, 10859)
+    assert m and m.tier == Tier.high
+
+
+def test_retailer_is_not_a_brand(matcher):
+    it = item(name="Living Room Fire TV Stick 4K Plus", manufacturer="Amazon",
+              purchaseDate="2026-10-14")
+    assert best(matcher, it, 10128) is None
+
+
+def test_post_recall_purchase_caps_at_low(matcher):
     it = item(name="Laminator", manufacturer="3M", modelNumber="TL1302Z",
               purchaseDate="2029-01-01")
     m = best(matcher, it, 11022)
-    assert m and m.tier == Tier.medium
-    assert any(e.signal == "purchase-date" for e in m.evidence)
+    assert m and m.tier == Tier.low
+
+
+def test_known_model_not_in_recall_caps_name_match(matcher):
+    # The 2004 Lasko recall lists 4-digit models; owning model 754200 isn't evidence.
+    it = item(name="Space Heater", manufacturer="Lasko", modelNumber="754200")
+    for m in matcher.match_item(it):
+        assert m.tier == Tier.low

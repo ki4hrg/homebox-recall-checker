@@ -20,6 +20,8 @@ services:
       # MIN_NOTIFY_TIER: medium                       # low | medium | high
       # AUTO_WRITEBACK_TIER: high                     # tag + maintenance entry in Homebox
       # WRITEBACK: "true"
+      # RECALL_SOURCES: cpsc,nhtsa                    # default
+      # NHTSA_TYPES: C,E                              # C child seats, E equipment, T tires, V vehicles
       TZ: America/New_York
     volumes:
       - recall-checker-data:/data

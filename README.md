@@ -1,7 +1,9 @@
 # homebox-recall-checker
 
 Checks the items in your [Homebox](https://homebox.software) inventory against
-[CPSC](https://www.cpsc.gov/Recalls) consumer product recalls. When it finds a match it can:
+[CPSC](https://www.cpsc.gov/Recalls) consumer product recalls and
+[NHTSA](https://www.nhtsa.gov/recalls) recalls for car seats and motor-vehicle equipment.
+When it finds a match it can:
 
 - notify you through [Apprise](https://github.com/caronc/apprise), which covers ntfy, Pushover, Discord, email, Gotify, Home Assistant and 100+ others;
 - tag the item **Recall** in Homebox and add a maintenance entry with the hazard, remedy and link;
@@ -11,17 +13,19 @@ Requires **Homebox 0.26+**, which has the `/v1/entities` API.
 
 ## How it works
 
-1. **Recalls**: the first run mirrors the whole CPSC recall database, about 10k recalls (28 MB, roughly 10 s). Later runs only fetch recalls published or updated since the last sync. The data is stored in SQLite under `/data`.
+1. **Recalls**, stored in SQLite under `/data`:
+   - **CPSC**: the first run mirrors the whole database, about 10k recalls (28 MB, roughly 10 s). Later runs only fetch recalls published or updated since the last sync.
+   - **NHTSA**: NHTSA's JSON API only looks up vehicles by make/model/year, so the checker reads its daily [flat file](https://static.nhtsa.gov/odi/ffdd/rcl/RCL.txt) instead (15 MB zipped, post-2010). That file covers child seats and aftermarket equipment such as inverters, RV fridges, jacks and chargers. It lists models and part numbers explicitly, plus the dates affected units were made. Vehicles and tires are off by default (`NHTSA_TYPES`).
 2. **Items**: pages through Homebox entities. Locations, archived items and sold items are skipped. Full item details are fetched only when an item's `updatedAt` changes.
-3. **Matching**: CPSC almost never fills in its structured model field, so model numbers are pulled from the recall's free text. Each match gets a confidence tier:
+3. **Matching**: CPSC almost never fills in its structured model field, so its model numbers are pulled from the recall's free text. NHTSA's listed models and part numbers are matched directly. Specs such as `40V`, `4.0Ah` or `1200W` never count as model numbers. If an item has a Model Number, it's trusted over anything in the item's name. Each match gets a confidence tier:
 
    | Tier | Signal |
    |---|---|
-   | **high** | UPC/EAN match, *or* the item's model number appears in the recall **and** the brand matches |
-   | **medium** | model number appears but the brand doesn't match; or a model variant/prefix plus brand; or a product line (e.g. IKEA "MALM") plus brand; or brand plus *every* distinctive word of the item name |
+   | **high** | UPC/EAN match; *or* the item's model number (or an NHTSA-listed model/part number) appears in the recall **and** the brand matches |
+   | **medium** | model number appears but the brand doesn't match; or a model variant/prefix plus brand; or a product line (e.g. IKEA "MALM", Graco "SnugRide Turn & Slide") plus brand; or brand plus *every* distinctive word of the item name, when the recall doesn't list models that rule yours out |
    | **low** | brand plus some overlapping product words. Shown in the UI only by default. |
 
-   An item purchased more than `PURCHASE_GRACE_DAYS` after the recall drops one tier.
+   Two purchase-date checks cap a match at **low**: buying more than `PURCHASE_GRACE_DAYS` after the recall, and buying before the first affected unit was made.
 
 4. **Notify**: new matches at or above `MIN_NOTIFY_TIER` are sent once, batched into a single message. Dismissed matches never re-notify. If delivery fails, it's retried on the next run.
 5. **Write-back**: matches at or above `AUTO_WRITEBACK_TIER`, plus anything you **Confirm** in the UI, get the tag and a maintenance entry. Write-back is idempotent.
@@ -76,6 +80,8 @@ credentials.
 | `WRITEBACK` | `true` | Set `false` to never modify Homebox |
 | `RECALL_TAG_NAME` | `Recall` | Created if missing |
 | `PURCHASE_GRACE_DAYS` | `365` | |
+| `RECALL_SOURCES` | `cpsc,nhtsa` | Which feeds to check |
+| `NHTSA_TYPES` | `C,E` | `C` child seats, `E` equipment, `T` tires, `V` vehicles |
 | `DATA_DIR` | `/data` | SQLite location |
 | `UI_PORT` | `8080` | |
 | `LOG_LEVEL` | `INFO` | |
@@ -102,4 +108,4 @@ cp .env.example .env              # point at a Homebox instance
 .venv/bin/recall-checker check --dry-run
 ```
 
-The recall source (`sources/`) and the notifier (`notify/`) are small protocols, so other sources (NHTSA, FDA, Health Canada) or native notifiers can be added without touching the matcher.
+Recall sources (`sources/`) and the notifier (`notify/`) are small protocols, so new sources (FDA, Health Canada) or native notifiers can be added without touching the matcher. A source that changes how it normalizes records bumps its `parser_version`, which makes the next run re-fetch and re-parse that source in full.

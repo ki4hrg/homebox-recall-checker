@@ -40,11 +40,11 @@ class RunResult:
 
 
 class Runner:
-    def __init__(self, settings: Settings, db: DB, source: RecallSource,
+    def __init__(self, settings: Settings, db: DB, sources: list[RecallSource],
                  homebox: HomeboxClient, notifier: Notifier):
         self.s = settings
         self.db = db
-        self.source = source
+        self.sources = sources
         self.homebox = homebox
         self.notifier = notifier
         self.writeback = WriteBack(homebox, settings.recall_tag_name)
@@ -63,19 +63,33 @@ class Runner:
 
     # --- steps ---
     def sync_recalls(self, res: RunResult) -> None:
-        last = self.db.get_meta(f"{self.source.name}_last_sync")
-        since = None
-        if last and self.db.recall_count():
-            since = date.fromisoformat(last) - SYNC_OVERLAP
-        today = date.today()
-        recalls = self.source.fetch(since)
-        res.recalls_fetched = len(recalls)
-        changed = self.db.upsert_recalls(recalls)
-        res.recalls_changed = len(changed)
-        if changed or self._index is None:
+        any_changed = False
+        for source in self.sources:
+            # One feed being down must not stop matching against the others.
+            try:
+                any_changed |= self._sync_source(source, res)
+            except Exception as exc:
+                log.exception("Recall sync failed for %s", source.name)
+                res.errors.append(f"{source.name} sync: {exc}")
+        if any_changed or self._index is None:
             self._index = RecallIndex(self.db.all_recalls())
-        self.db.set_meta(f"{self.source.name}_last_sync", today.isoformat())
         res.recalls_total = len(self._index)
+
+    def _sync_source(self, source: RecallSource, res: RunResult) -> bool:
+        last = self.db.get_meta(f"{source.name}_last_sync")
+        version = str(source.parser_version)
+        reparse = self.db.get_meta(f"{source.name}_parser_version") != version
+        since = date.fromisoformat(last) - SYNC_OVERLAP if last and not reparse else None
+        if reparse and last:
+            log.info("%s parser changed; re-fetching all recalls", source.name)
+        today = date.today()
+        recalls = source.fetch(since)
+        changed = self.db.upsert_recalls(recalls)
+        res.recalls_fetched += len(recalls)
+        res.recalls_changed += len(changed)
+        self.db.set_meta(f"{source.name}_last_sync", today.isoformat())
+        self.db.set_meta(f"{source.name}_parser_version", version)
+        return bool(changed)
 
     def sync_items(self, res: RunResult) -> None:
         known = self.db.item_versions()

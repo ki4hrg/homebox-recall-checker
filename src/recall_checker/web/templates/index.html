@@ -39,7 +39,7 @@
       {% if m.status != "new" %}<span class="badge status">{{ m.status }}</span>{% endif %}
     </h3>
     {% if m.recall %}
-      <div>{{ m.recall.title }} <span class="muted">({{ m.recall.recall_date }})</span></div>
+      <div>{{ m.recall.title }} <span class="muted">({{ m.recall.source|upper }}, {{ m.recall.recall_date }})</span></div>
     {% endif %}
     <ul class="evidence">
       {% for e in m.evidence %}<li>{{ e.detail }}</li>{% endfor %}

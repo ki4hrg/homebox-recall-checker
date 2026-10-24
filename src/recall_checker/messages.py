@@ -15,6 +15,11 @@ def maintenance_text(recall: Recall, tier: Tier, ui_link: str = "") -> str:
         lines += ["Remedy: " + " ".join(recall.remedies), ""]
     if recall.consumer_contact:
         lines += ["Contact: " + recall.consumer_contact, ""]
+    if recall.manufactured_from or recall.manufactured_to:
+        lines += [f"Affected units made: {recall.manufactured_from or '?'} to "
+                  f"{recall.manufactured_to or '?'}", ""]
+    if recall.models:
+        lines += ["Models/parts: " + ", ".join(recall.models[:30]), ""]
     lines.append(f"Recall date: {recall.recall_date}  ·  Match confidence: {tier.name}")
     lines.append(recall.url)
     if ui_link:

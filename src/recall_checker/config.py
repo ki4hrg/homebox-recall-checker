@@ -54,7 +54,12 @@ class Settings(BaseSettings):
     public_url: str = ""
     log_level: str = "INFO"
 
+    # Comma-separated: cpsc, nhtsa
+    recall_sources: str = "cpsc,nhtsa"
     cpsc_base_url: str = "https://www.saferproducts.gov/RestWebServices/Recall"
+    nhtsa_flat_file_url: str = "https://static.nhtsa.gov/odi/ffdd/rcl/FLAT_RCL_POST_2010.zip"
+    # NHTSA recall types: C child seats, E equipment, T tires, V vehicles
+    nhtsa_types: str = "C,E"
 
     @field_validator("min_notify_tier", "auto_writeback_tier", mode="before")
     @classmethod
@@ -68,6 +73,12 @@ class Settings(BaseSettings):
     @property
     def homebox_link_base(self) -> str:
         return (self.homebox_public_url or self.homebox_url).rstrip("/")
+
+    def source_names(self) -> list[str]:
+        return [n.strip().lower() for n in self.recall_sources.split(",") if n.strip()]
+
+    def nhtsa_type_set(self) -> set[str]:
+        return {t.strip().upper() for t in self.nhtsa_types.split(",") if t.strip()}
 
     def apprise_url_list(self) -> list[str]:
         return [u for u in self.apprise_urls.replace(",", " ").split() if u]
