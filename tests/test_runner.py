@@ -27,6 +27,10 @@ class FakeNotifier:
         self.sent.append((title, body))
         return True
 
+    def test(self, link=""):
+        ok = self.send("test", link)
+        return ok, "Sent to 1 target." if ok else "Delivery failed. Connection refused."
+
 
 def entity(id, name, manufacturer="", model="", updated="2026-01-01T00:00:00Z", **kw):
     return {"id": id, "name": name, "manufacturer": manufacturer, "modelNumber": model,

@@ -29,3 +29,17 @@ def test_pages_and_actions(env):  # noqa: F811
     client.post(f"/match/{sleeper['id']}/status", data={"status": "dismissed"})
     assert "Rock n Play" not in client.get("/?status=new").text
     assert client.get("/match/999999").status_code == 404
+
+
+def test_test_notification_button(env):  # noqa: F811
+    runner, _, notifier, router = env
+    router.route(host="testserver").pass_through()
+    client = TestClient(create_app(runner))
+
+    page = client.post("/test-notify")
+    assert "Test notification: Sent to 1 target." in page.text
+    assert notifier.sent[-1][0] == "test"
+
+    notifier.fail = True
+    page = client.post("/test-notify")
+    assert 'class="notice err"' in page.text and "Connection refused" in page.text

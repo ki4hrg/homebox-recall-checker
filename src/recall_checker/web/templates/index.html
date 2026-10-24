@@ -7,12 +7,18 @@
       {% if last_run.errors %} · <strong style="color:var(--high)">{{ last_run.errors|length }} error(s)</strong>{% endif %}
     </span>
   {% endif %}
+  <form class="inline" method="post" action="/test-notify">
+    <button title="{{ 'Send a test message through Apprise' if notifier_configured else 'No APPRISE_URLS configured' }}">Test notification</button>
+  </form>
   <form class="inline" method="post" action="/run">
     <button class="primary" {% if running %}disabled{% endif %}>{{ "Checking…" if running else "Run check now" }}</button>
   </form>
 </div>
 {% endblock %}
 {% block content %}
+{% if notice %}
+  <div class="notice {{ 'ok' if notice_ok else 'err' }}" role="status">{{ notice }}</div>
+{% endif %}
 <nav class="filters">
   {% for s in ["new", "confirmed", "dismissed", "all"] %}
     <a href="?status={{ s }}&tier={{ tier }}" class="{{ 'on' if status == s }}">{{ s|capitalize }}

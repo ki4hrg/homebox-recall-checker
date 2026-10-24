@@ -46,8 +46,8 @@ def cmd_check(s: Settings, dry_run: bool) -> int:
 
 def cmd_test_notify(s: Settings) -> int:
     n = AppriseNotifier(s.apprise_url_list(), s.apprise_config)
-    ok = n.send("Homebox Recall Checker test", "If you can read this, notifications work.")
-    print("sent" if ok else "FAILED (see log)")
+    ok, detail = n.test(s.public_url)
+    print(("OK: " if ok else "FAILED: ") + detail)
     return 0 if ok else 1
 
 

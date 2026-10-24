@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import threading
 from pathlib import Path
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -43,14 +44,16 @@ def create_app(runner: Runner) -> FastAPI:
         }
 
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request, status: str = "new", tier: str = ""):
+    def index(request: Request, status: str = "new", tier: str = "", notice: str = "",
+              notice_ok: bool = True):
         min_tier = Tier.parse(tier) if tier else Tier.low
         rows = db.list_matches(status if status in STATUSES else None, int(min_tier))
         return templates.TemplateResponse(request, "index.html", {
             "matches": [hydrate(r) for r in rows],
             "status": status, "tier": tier, "counts": db.match_counts(),
             "last_run": last_run(), "running": runner.running,
-            "settings": runner.s,
+            "settings": runner.s, "notice": notice, "notice_ok": notice_ok,
+            "notifier_configured": runner.notifier.configured,
         })
 
     @app.get("/match/{match_id}", response_class=HTMLResponse)
@@ -80,6 +83,12 @@ def create_app(runner: Runner) -> FastAPI:
         if not runner.running:
             threading.Thread(target=runner.run, daemon=True, name="manual-check").start()
         return RedirectResponse("/", status_code=303)
+
+    @app.post("/test-notify")
+    def test_notify():
+        ok, detail = runner.notifier.test(runner.s.public_url.rstrip("/"))
+        query = urlencode({"notice": f"Test notification: {detail}", "notice_ok": ok})
+        return RedirectResponse(f"/?{query}", status_code=303)
 
     @app.get("/healthz")
     def healthz():
