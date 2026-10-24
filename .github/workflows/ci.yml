@@ -54,24 +54,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: image
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Trigger Dockhand sync
-        env:
-          WEBHOOK_URL:   ${{ secrets.DOCKHAND_WEBHOOK_URL   || vars.DOCKHAND_WEBHOOK_URL }}
-          WEBHOOK_TOKEN: ${{ secrets.DOCKHAND_WEBHOOK_TOKEN || vars.DOCKHAND_WEBHOOK_TOKEN }}
-        run: |
-          if [ -z "$WEBHOOK_URL" ]; then
-            echo "DOCKHAND_WEBHOOK_URL not set — skipping deploy notification."; exit 0
-          fi
-          url="$WEBHOOK_URL"
-          if [ -n "$WEBHOOK_TOKEN" ]; then
-            case "$url" in
-              *\?*) url="$url&secret=$WEBHOOK_TOKEN" ;;
-              *)    url="$url?secret=$WEBHOOK_TOKEN" ;;
-            esac
-          fi
-          curl -fsS --retry 3 --retry-delay 5 "$url"
