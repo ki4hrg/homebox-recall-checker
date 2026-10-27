@@ -1,6 +1,8 @@
 """One check cycle: sync recalls -> sync items -> match -> notify -> write back."""
 from __future__ import annotations
 
+import ctypes
+import gc
 import json
 import logging
 import threading
@@ -20,6 +22,16 @@ from .writeback import WriteBack
 log = logging.getLogger(__name__)
 
 SYNC_OVERLAP = timedelta(days=2)
+
+
+def _release_memory() -> None:
+    """Hand freed heap back to the OS. CPython's allocator keeps it otherwise, so a
+    container that peaked at a few hundred MB once stays that size until restarted."""
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except (OSError, AttributeError):  # not glibc (musl, macOS): best effort only
+        pass
 
 
 @dataclass
@@ -63,19 +75,19 @@ class Runner:
 
     # --- steps ---
     def sync_recalls(self, res: RunResult) -> None:
-        any_changed = False
         for source in self.sources:
             # One feed being down must not stop matching against the others.
             try:
-                any_changed |= self._sync_source(source, res)
+                self._sync_source(source, res)
             except Exception as exc:
                 log.exception("Recall sync failed for %s", source.name)
                 res.errors.append(f"{source.name} sync: {exc}")
-        if any_changed or self._index is None:
-            self._index = RecallIndex(self.db.all_recalls())
+        # Rebuilt every run (a few seconds) rather than cached between runs: the index is
+        # ~150 MB for the full CPSC + NHTSA set, and the checker idles 24h between uses.
+        self._index = RecallIndex(self.db.all_recalls())
         res.recalls_total = len(self._index)
 
-    def _sync_source(self, source: RecallSource, res: RunResult) -> bool:
+    def _sync_source(self, source: RecallSource, res: RunResult) -> None:
         last = self.db.get_meta(f"{source.name}_last_sync")
         version = str(source.parser_version)
         reparse = self.db.get_meta(f"{source.name}_parser_version") != version
@@ -89,7 +101,6 @@ class Runner:
         res.recalls_changed += len(changed)
         self.db.set_meta(f"{source.name}_last_sync", today.isoformat())
         self.db.set_meta(f"{source.name}_parser_version", version)
-        return bool(changed)
 
     def sync_items(self, res: RunResult) -> None:
         known = self.db.item_versions()
@@ -188,6 +199,8 @@ class Runner:
         finally:
             res.duration_s = round(time.monotonic() - t0, 2)
             self.db.set_meta("last_run", json.dumps(asdict(res)))
+            self._index = None
+            _release_memory()
             self._lock.release()
         log.info(
             "Check done in %.1fs: %d recalls (%d changed), %d items (%d refreshed), "

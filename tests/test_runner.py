@@ -132,6 +132,14 @@ def test_full_cycle_notifies_and_writes_back_once(env, raw_recalls):
     assert hb.detail_calls == calls
 
 
+def test_index_released_after_run(env, raw_recalls):
+    runner, *_ = env
+    assert not runner.run().errors
+    assert runner._index is None             # not held for the 24h until the next run
+    res = runner.run()                       # and rebuilt when needed
+    assert res.recalls_total == len(raw_recalls)
+
+
 def test_changed_item_is_refetched(env):
     runner, hb, _, _ = env
     runner.run()
