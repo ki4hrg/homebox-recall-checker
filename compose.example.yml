@@ -12,11 +12,12 @@ services:
       - homebox
     environment:
       HOMEBOX_URL: http://homebox:7745
-      HOMEBOX_TOKEN: ${HOMEBOX_RECALL_TOKEN}          # Homebox → Profile → API Keys (hb_…)
+      # Required: Homebox → Profile → API Keys (hb_…). Unset or empty stops `compose up`.
+      HOMEBOX_TOKEN: ${HOMEBOX_RECALL_TOKEN:?set HOMEBOX_RECALL_TOKEN to a Homebox API key}
       HOMEBOX_PUBLIC_URL: https://homebox.example.com # for links in alerts
       PUBLIC_URL: https://recalls.example.com         # this UI: "Review match" links, allowed host
       # ALLOWED_HOSTS: recalls.example.com            # default: PUBLIC_URL's host, any IP, localhost
-      APPRISE_URLS: ${RECALL_APPRISE_URLS}            # e.g. ntfys://ntfy.example.com/recalls
+      APPRISE_URLS: ${RECALL_APPRISE_URLS:-}          # optional; e.g. ntfys://ntfy.example.com/recalls
       # CHECK_CRON: "0 7 * * *"                       # default: every 24h + on startup
       # MIN_NOTIFY_TIER: medium                       # low | medium | high
       # AUTO_WRITEBACK_TIER: high                     # tag + maintenance entry in Homebox
@@ -24,6 +25,8 @@ services:
       # RECALL_SOURCES: cpsc,nhtsa                    # default
       # NHTSA_TYPES: C,E                              # C child seats, E equipment, T tires, V vehicles
       TZ: America/New_York
+    # No healthcheck here: the image's own checks http://127.0.0.1:8080/api/health. If you
+    # override it, use /api/health; /healthz is deprecated and goes away in a later release.
     volumes:
       - recall-checker-data:/data
     # The UI has no sign-in: anyone who reaches this port can confirm or dismiss matches.

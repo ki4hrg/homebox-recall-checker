@@ -10,12 +10,14 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from ..config import Tier
+from ..config import Tier, app_version, git_revision
 from ..runner import Runner
 from .guards import CrossSiteGuard, HostGuard
 
 HERE = Path(__file__).parent
 STATUSES = ("new", "confirmed", "dismissed")
+# A health answer is about this moment: never from a cache.
+NO_STORE = {"Cache-Control": "no-store"}
 
 
 def create_app(runner: Runner) -> FastAPI:
@@ -28,6 +30,8 @@ def create_app(runner: Runner) -> FastAPI:
     names, any_ip = runner.s.host_rule()
     app.add_middleware(HostGuard, names=names, allow_any_ip=any_ip)
     templates = Jinja2Templates(directory=HERE / "templates")
+    # Read once: both are fixed for the life of the process.
+    revision, version = git_revision(), app_version()
     templates.env.globals["Tier"] = Tier
 
     def last_run() -> dict | None:
@@ -115,8 +119,26 @@ def create_app(runner: Runner) -> FastAPI:
         query = urlencode({"notice": f"Test notification: {detail}", "notice_ok": ok})
         return RedirectResponse(f"/?{query}", status_code=303)
 
+    # The container healthcheck and "what is running": no database, no Homebox, no feeds, so it
+    # answers while a check runs and a slow dependency never restarts the container. Loopback
+    # Hosts always pass HostGuard, and as a GET it is outside CrossSiteGuard.
+    @app.get("/api/health")
+    def health():
+        return JSONResponse(
+            {"ok": True, "revision": revision, "version": version}, headers=NO_STORE
+        )
+
+    # Deprecated: the health route before 0.3.0, kept with its old answer for anything that
+    # still polls it, and removed in a later release (docs/DEPLOYMENT.md). It reads SQLite.
     @app.get("/healthz")
     def healthz():
-        return JSONResponse({"ok": True, "running": runner.running, "last_run": last_run()})
+        return JSONResponse(
+            {"ok": True, "running": runner.running, "last_run": last_run()},
+            headers={
+                **NO_STORE,
+                "Deprecation": "true",
+                "Link": '</api/health>; rel="successor-version"',
+            },
+        )
 
     return app
