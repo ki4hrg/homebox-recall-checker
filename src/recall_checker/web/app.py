@@ -12,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from ..config import Tier
 from ..runner import Runner
+from .guards import CrossSiteGuard, HostGuard
 
 HERE = Path(__file__).parent
 STATUSES = ("new", "confirmed", "dismissed")
@@ -21,6 +22,11 @@ def create_app(runner: Runner) -> FastAPI:
     db = runner.db
     app = FastAPI(title="Homebox Recall Checker", docs_url=None, redoc_url=None)
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
+    # No sign-in (README): refuse cross-site writes, and Host names that could be DNS rebinding.
+    # Added last runs first, so an unknown Host is refused before anything else.
+    app.add_middleware(CrossSiteGuard, public_url=runner.s.public_url)
+    names, any_ip = runner.s.host_rule()
+    app.add_middleware(HostGuard, names=names, allow_any_ip=any_ip)
     templates = Jinja2Templates(directory=HERE / "templates")
     templates.env.globals["Tier"] = Tier
 
