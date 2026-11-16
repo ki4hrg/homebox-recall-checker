@@ -1,0 +1,3 @@
+# Formatting-only commits, skipped by `git blame` (git config blame.ignoreRevsFile .git-blame-ignore-revs).
+# ruff format of src/ and tests/ (Phase 1; merged with a merge commit so this SHA reaches main)
+55691ea5fe21d1f67f786ae7613017d7f6321b21
