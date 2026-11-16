@@ -36,12 +36,18 @@ RUN uv sync --locked --no-dev --no-editable
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+# The commit this image was built from, reported by /api/health and at startup. CI passes it
+# (the standards' image.yml); a local build without --build-arg reports null. Declared after
+# the dependency layers, so a new commit doesn't invalidate them.
+ARG GIT_REVISION=""
+ENV GIT_REVISION=${GIT_REVISION}
+
 USER app
 VOLUME ["/data"]
 EXPOSE 8080
 
 HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=3 \
-    CMD python -c "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=4)" || exit 1
+    CMD python -c "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=4)" || exit 1
 
 ENTRYPOINT ["recall-checker"]
 CMD ["serve"]

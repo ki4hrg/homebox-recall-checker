@@ -1,4 +1,5 @@
 import threading
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,7 +23,7 @@ def test_pages_and_actions(env):  # noqa: F811
     page = client.get("/")
     assert page.status_code == 200 and "Rock n Play Sleeper" in page.text
 
-    assert client.get("/healthz").json()["ok"] is True
+    assert client.get("/api/health").json()["ok"] is True
 
     sleeper = next(r for r in runner.db.list_matches() if r["item_id"] == "i2")
     detail = client.get(f"/match/{sleeper['id']}")
@@ -179,12 +180,63 @@ def test_allowed_hosts_star_turns_check_off(env):  # noqa: F811
     assert client.get("/", headers={"Host": "anything.example"}).status_code == 200
 
 
+def test_dockerfile_healthcheck_uses_api_health():
+    dockerfile = (Path(__file__).parents[1] / "Dockerfile").read_text()
+    assert "http://127.0.0.1:8080/api/health" in dockerfile
+    assert "/healthz" not in dockerfile
+
+
 @pytest.mark.parametrize("allowed", ["", "recalls.example.com", "*"])
-def test_healthcheck_still_ok(env, allowed):  # noqa: F811
-    # The Dockerfile HEALTHCHECK calls http://127.0.0.1:8080/healthz.
+@pytest.mark.parametrize("path", ["/api/health", "/healthz"])
+def test_healthcheck_passes_host_guard(env, allowed, path):  # noqa: F811
+    # The Dockerfile HEALTHCHECK calls http://127.0.0.1:8080/api/health, whatever ALLOWED_HOSTS
+    # says; /healthz is the deprecated alias.
     client = app_with(env, allowed_hosts=allowed)
-    resp = client.get("/healthz", headers={"Host": "127.0.0.1:8080"})
+    resp = client.get(path, headers={"Host": "127.0.0.1:8080"})
     assert resp.status_code == 200 and resp.json()["ok"] is True
+
+
+def test_api_health_reports_revision(env, monkeypatch):  # noqa: F811
+    monkeypatch.setenv("GIT_REVISION", "abc1234")
+    resp = app_with(env).get("/api/health")
+    assert resp.status_code == 200
+    assert resp.headers["cache-control"] == "no-store"
+    body = resp.json()
+    assert body == {"ok": True, "revision": "abc1234", "version": body["version"]}
+    assert body["version"]  # the installed package's version
+
+
+@pytest.mark.parametrize("value", [None, "", "  "])
+def test_api_health_revision_null_when_unset(env, monkeypatch, value):  # noqa: F811
+    if value is None:
+        monkeypatch.delenv("GIT_REVISION", raising=False)
+    else:
+        monkeypatch.setenv("GIT_REVISION", value)
+    assert app_with(env).get("/api/health").json()["revision"] is None
+
+
+def test_api_health_touches_no_database(env, monkeypatch):  # noqa: F811
+    runner, *_ = env
+    client = app_with(env)
+
+    def boom(*args, **kwargs):
+        raise AssertionError("database used")
+
+    for name in dir(runner.db):
+        if not name.startswith("_") and callable(getattr(runner.db, name)):
+            monkeypatch.setattr(runner.db, name, boom)
+    assert client.get("/api/health").status_code == 200
+    with pytest.raises(AssertionError):  # the old route reads it: the patch works
+        client.get("/healthz")
+
+
+def test_healthz_is_a_deprecated_alias(env):  # noqa: F811
+    resp = app_with(env).get("/healthz")
+    assert resp.status_code == 200
+    assert resp.headers["deprecation"] == "true"
+    assert "/api/health" in resp.headers["link"]
+    assert resp.headers["cache-control"] == "no-store"
+    assert set(resp.json()) == {"ok", "running", "last_run"}  # its answer before 0.3.0
 
 
 @pytest.mark.parametrize(
@@ -192,4 +244,4 @@ def test_healthcheck_still_ok(env, allowed):  # noqa: F811
 )
 def test_allowed_hosts_rejects_urls(bad):
     with pytest.raises(ValidationError):
-        Settings(allowed_hosts=bad, _env_file=None)
+        Settings(allowed_hosts=bad, homebox_token="hb_x", _env_file=None)

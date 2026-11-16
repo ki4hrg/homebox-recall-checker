@@ -62,6 +62,20 @@ CI fails the release build if the tag doesn't match the `pyproject.toml` version
 creates the GHCR package as **private**, so either make it public or give the deploy host registry
 credentials.
 
+### Health and the running version
+
+`GET /api/health` answers `{"ok": true, "revision": "<commit>", "version": "<X.Y.Z>"}` with
+`Cache-Control: no-store`. It reads no database and calls nothing, so it says only that the
+process is serving and which build it is. The image's healthcheck calls it on `127.0.0.1`, which
+`ALLOWED_HOSTS` always admits. `revision` is the commit the image was built from (`null` in an
+image built without the `GIT_REVISION` build arg); compare it with the release's commit, or read
+the image's `org.opencontainers.image.revision` label. Upgrading and rolling back:
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
+**`/healthz` is deprecated** (0.3.0). It still answers as before (`ok`, `running`, `last_run`),
+with a `Deprecation` header, and goes away in a later release. If your compose file or a monitor
+calls it, switch to `/api/health`.
+
 ## Access and security
 
 **The web UI has no sign-in, by design.** Anyone who can reach it can see matched items (serial
@@ -97,6 +111,12 @@ confirm/dismiss will answer 403.
 
 ## Configuration
 
+Settings are checked when the container starts. A missing `HOMEBOX_TOKEN`, a URL that isn't
+`http(s)://host…`, a bad `CHECK_CRON` line, an unknown `RECALL_SOURCES` or `NHTSA_TYPES` entry,
+or another bad value stops it with one `Error: <VARIABLE>: <problem>` line each in the log
+(values are never printed), instead of starting and failing later. Fix the variable and start
+it again. The compose example also refuses `compose up` without `HOMEBOX_RECALL_TOKEN`.
+
 | Variable | Default | |
 |---|---|---|
 | `HOMEBOX_URL` | `http://homebox:7745` | API base, as reached from the container |
@@ -106,7 +126,7 @@ confirm/dismiss will answer 403.
 | `ALLOWED_HOSTS` | `PUBLIC_URL`'s host, any IP, `localhost` | Comma-separated host names the UI answers to; `*` turns the check off ([Access and security](#access-and-security)) |
 | `APPRISE_URLS` | | Space- or comma-separated Apprise URLs |
 | `APPRISE_CONFIG` | | Path to an Apprise config file (YAML/text) |
-| `CHECK_INTERVAL_HOURS` | `24` | |
+| `CHECK_INTERVAL_HOURS` | `24` | More than 0 |
 | `CHECK_CRON` | | Crontab expression; overrides the interval (set `TZ`) |
 | `RUN_ON_STARTUP` | `true` | |
 | `MIN_NOTIFY_TIER` | `medium` | `low`, `medium` or `high` |
@@ -114,14 +134,14 @@ confirm/dismiss will answer 403.
 | `WRITEBACK` | `true` | Set `false` to never modify Homebox |
 | `RECALL_TAG_NAME` | `Recall` | Created if missing |
 | `PURCHASE_GRACE_DAYS` | `365` | |
-| `RECALL_SOURCES` | `cpsc,nhtsa` | Which feeds to check |
-| `NHTSA_TYPES` | `C,E` | `C` child seats, `E` equipment, `T` tires, `V` vehicles |
+| `RECALL_SOURCES` | `cpsc,nhtsa` | Which feeds to check; at least one |
+| `NHTSA_TYPES` | `C,E` | `C` child seats, `E` equipment, `T` tires, `V` vehicles; at least one when `nhtsa` is on |
 | `CPSC_BASE_URL` | CPSC's recall API | Override only for testing |
 | `NHTSA_FLAT_FILE_URL` | NHTSA's recall flat file | Override only for testing |
 | `DATA_DIR` | `/data` | SQLite location |
 | `UI_HOST` | `0.0.0.0` | Address the UI listens on inside the container |
 | `UI_PORT` | `8080` | |
-| `LOG_LEVEL` | `INFO` | |
+| `LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL` |
 
 ## CLI
 

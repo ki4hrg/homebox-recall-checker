@@ -17,8 +17,8 @@ recall feeds, the notification services or the deploy host.
 |---|---|---|---|
 | 0 Audit | done (this file) | | |
 | Hotfix: cross-site writes and unknown hosts (Q1, Q2) | done, released 0.2.2 | #1 | `5e8f677` |
-| 1 Pipeline (+ uv, ruff format, Dependabot) | in review | `ci/standard-pipeline` | merge commit, by hand (Q6) |
-| 2 Runtime (health, revision, config) | | | |
+| 1 Pipeline (+ uv, ruff format, Dependabot) | done | #2 | `24a8bca` (merge commit, by hand, Q6) |
+| 2 Runtime (health, revision, config) | in review; John merges by hand, then release 0.3.0 | `fix/health-revision-config` | |
 | 3 Boundaries (UI input, errors) | | | |
 | 4 Agent docs | | | |
 | 5 Design/copy | proposed, small (Q13) | | |
@@ -375,6 +375,10 @@ missing files are already open in the standards' `open-questions.md`.
   in `.git-blame-ignore-revs`, PR 1 merged with a merge commit; MIT `LICENSE`; releases after
   Phases 2 and 3; Dependabot monthly; test data left as is; Phases 1–5; the full Phase 5 pass).
 - **Q9:** nothing polls `/healthz`. Remove it once `/api/health` exists (Phase 2).
+  **Updated in Phase 2:** `/healthz` stays in 0.3.0 as a deprecated alias (its old answer plus a
+  `Deprecation` header), in case a compose file outside the repo overrides the healthcheck with
+  it, and is removed in a later release; the README, `docs/DEPLOYMENT.md` and the 0.3.0 release
+  notes say so (`docs/DECISIONS.md`).
 
 ## Questions for John
 

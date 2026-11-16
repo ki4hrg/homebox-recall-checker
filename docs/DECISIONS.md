@@ -80,3 +80,29 @@ to plan for. Rejected: weekly (John, Q10).
 `ruff format` was applied in one formatting-only commit, listed in `.git-blame-ignore-revs`.
 The Phase 1 PR that holds it is merged with a merge commit, not squashed, so that commit's SHA
 reaches `main` unchanged (John, Q6). Every later PR is squash-merged as usual.
+
+## 2026-11-16 — `/api/health` adds `version`; `/healthz` stays one release as a deprecated alias
+
+`GET /api/health` answers `{ ok, revision, version }` with `Cache-Control: no-store`. `revision`
+is the standard's (`GIT_REVISION`, `null` when the image was built without it). `version` is
+added because people who install a released tool know it by version, not by commit; it is read
+once from the package metadata, so the route stays as cheap as the standard asks. The running
+flag and last-run summary `/healthz` carried are left out: the last run is a SQLite read, and the
+UI already shows both.
+
+`/healthz` keeps its old answer, with `Deprecation: true` and a `Link` to `/api/health`, from
+0.3.0 until a later release removes it. Nothing in this repo polls it (John, Q9), but a compose
+file written for 0.2.x could override the image's healthcheck with it, and other people's installs
+are out of sight. The image's own healthcheck moved to `/api/health`. Rejected: removing it in
+0.3.0 (the plan's first answer to Q9); a redirect (a healthcheck client may not follow it).
+
+## 2026-11-16 — Settings refuse a bad configuration at boot
+
+Every setting is checked in `Settings` (pydantic-settings) before anything starts: the Homebox
+token required and non-blank, URLs `http(s)` with a host, `CHECK_CRON` parsed by APScheduler,
+`RECALL_SOURCES` and `NHTSA_TYPES` against the known names, tiers, log level and number ranges.
+A bad value exits 1 with one `Error: <VARIABLE>: <problem>` line each and no traceback, and no
+line prints a value: a URL can carry credentials. The token and `APPRISE_URLS` are left out of
+the settings' `repr`. `restart: unless-stopped` still restarts a refused container; the compose
+guard on `HOMEBOX_RECALL_TOKEN` stops the commonest case before it starts. Rejected: `SecretStr`
+for the token (every call site changes for what `repr=False` already gives).

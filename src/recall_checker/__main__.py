@@ -4,7 +4,7 @@ import argparse
 import logging
 import sys
 
-from .config import Settings, Tier, get_settings
+from .config import Settings, Tier, app_version, get_settings, git_revision
 from .db import DB
 from .homebox import HomeboxClient
 from .notify.apprise_ import AppriseNotifier
@@ -17,22 +17,17 @@ log = logging.getLogger("recall_checker")
 
 
 def build_sources(s: Settings) -> list[RecallSource]:
+    # Settings has already refused an empty or unknown RECALL_SOURCES.
     sources: list[RecallSource] = []
     for name in s.source_names():
         if name == "cpsc":
             sources.append(CPSCSource(s.cpsc_base_url))
         elif name == "nhtsa":
             sources.append(NHTSASource(s.nhtsa_type_set(), s.nhtsa_flat_file_url))
-        else:
-            sys.exit(f"Unknown recall source {name!r} in RECALL_SOURCES (expected cpsc, nhtsa)")
-    if not sources:
-        sys.exit("RECALL_SOURCES is empty")
     return sources
 
 
 def build_runner(s: Settings) -> Runner:
-    if not s.homebox_token:
-        sys.exit("HOMEBOX_TOKEN is required (create an API key in Homebox: Profile → API Keys)")
     return Runner(
         settings=s,
         db=DB(s.db_path),
@@ -129,6 +124,13 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("test-notify", help="send a test notification via Apprise")
     args = parser.parse_args(argv)
 
+    # Before the settings are read, so a container that refuses its config still says what
+    # it is running.
+    print(
+        f"recall-checker {app_version() or '?'}, revision {git_revision() or 'unknown'}",
+        file=sys.stderr,
+        flush=True,
+    )
     s = get_settings()
     logging.basicConfig(
         level=s.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s"
