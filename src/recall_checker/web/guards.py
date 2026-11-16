@@ -139,11 +139,14 @@ class CrossSiteGuard:
         await self.app(scope, receive, send)
 
 
-# The UI loads only its own stylesheet and recall images from the feeds' hosts, runs no script,
-# and is never framed: a page that frames it can't trick a click onto Confirm or Dismiss.
+# The UI loads only its own stylesheet, its own theme script and recall images from the feeds'
+# hosts, and is never framed: a page that frames it can't trick a click onto Confirm or Dismiss.
+# `script-src 'self'` admits only files this app serves: no inline script or event handler, and
+# nothing else it answers can run as one (JSON, plain text and HTML fail `nosniff`'s script check).
 CONTENT_SECURITY_POLICY = "; ".join(
     [
         "default-src 'none'",
+        "script-src 'self'",
         "style-src 'self'",
         "img-src 'self' https: http:",
         "form-action 'self'",

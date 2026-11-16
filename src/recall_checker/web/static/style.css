@@ -1,47 +1,206 @@
+/* The UI's one stylesheet, served from this origin: the CSP allows no inline style.
+
+   Colours and radii use the standards' token names (docs/design.md, Tokens) as custom
+   properties, spelled the way Tailwind 4 spells them (`--color-page`, `--radius-card`) so they
+   read the same as in the apps that use Tailwind. Type and spacing use Tailwind 4's names too.
+   Rules below the token blocks use only these: tests/test_design.py refuses a raw colour there
+   and checks every text and control pair for WCAG AA contrast in both themes. */
+
 :root {
-  --bg: #f7f7f5; --fg: #1d1d1b; --muted: #6b6b66; --card: #fff; --border: #e3e3de;
-  --high: #c62828; --medium: #e08a00; --low: #6b7d8f; --accent: #2457c5; --ok: #2e7d32;
+  color-scheme: light;
+  --color-page: #f7f7f5;
+  --color-card: #ffffff;
+  --color-sunk: #efefeb;
+  --color-line: #e3e3de;
+  --color-ink: #1d1d1b;
+  --color-ink-2: #3d3d3a;
+  --color-ink-3: #62625d;
+  --color-accent: #2457c5;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #e7eefb;
+  --color-ok: #2a6f2e;
+  --color-ok-ink: #ffffff;
+  --color-ok-soft: #e5f1e6;
+  --color-warn: #8a5700;
+  --color-warn-ink: #ffffff;
+  --color-warn-soft: #f8eedb;
+  --color-danger: #c62828;
+  --color-danger-ink: #ffffff;
+  --color-danger-soft: #fbe9e8;
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 15px;
+  --text-lg: 1.125rem;
+  --spacing: 0.25rem;
 }
+
+/* Dark, twice with the same values: by the device unless Light was chosen, and by choice.
+   The choice is `data-theme` on <html>, set before first paint by /static/theme.js.
+   tests/test_design.py fails if the two blocks drift apart. */
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #151515; --fg: #ececea; --muted: #9a9a94; --card: #1f1f1f; --border: #333;
-          --accent: #7aa2ff; }
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-page: #151515;
+    --color-card: #1f1f1f;
+    --color-sunk: #2a2a2a;
+    --color-line: #333333;
+    --color-ink: #ececea;
+    --color-ink-2: #cfcfca;
+    --color-ink-3: #a3a39d;
+    --color-accent: #7aa2ff;
+    --color-accent-ink: #151515;
+    --color-accent-soft: #1d2840;
+    --color-ok: #7cc684;
+    --color-ok-ink: #151515;
+    --color-ok-soft: #1b2e1d;
+    --color-warn: #e3a33b;
+    --color-warn-ink: #151515;
+    --color-warn-soft: #35280f;
+    --color-danger: #f28b82;
+    --color-danger-ink: #151515;
+    --color-danger-soft: #3a1e1c;
+  }
 }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-page: #151515;
+  --color-card: #1f1f1f;
+  --color-sunk: #2a2a2a;
+  --color-line: #333333;
+  --color-ink: #ececea;
+  --color-ink-2: #cfcfca;
+  --color-ink-3: #a3a39d;
+  --color-accent: #7aa2ff;
+  --color-accent-ink: #151515;
+  --color-accent-soft: #1d2840;
+  --color-ok: #7cc684;
+  --color-ok-ink: #151515;
+  --color-ok-soft: #1b2e1d;
+  --color-warn: #e3a33b;
+  --color-warn-ink: #151515;
+  --color-warn-soft: #35280f;
+  --color-danger: #f28b82;
+  --color-danger-ink: #151515;
+  --color-danger-soft: #3a1e1c;
+}
+
 * { box-sizing: border-box; }
-body { margin: 0; font: 15px/1.5 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); }
-a { color: var(--accent); }
-header { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; align-items: center; justify-content: space-between;
-         padding: 1rem clamp(1rem, 4vw, 2rem); border-bottom: 1px solid var(--border); }
-header h1 { font-size: 1.1rem; margin: 0; }
-header h1 a { color: inherit; text-decoration: none; }
-main { padding: 1rem clamp(1rem, 4vw, 2rem); max-width: 1100px; margin: 0 auto; }
-.muted { color: var(--muted); font-size: .9em; }
-.filters { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
-.filters a { padding: .25rem .7rem; border: 1px solid var(--border); border-radius: 999px; text-decoration: none; color: var(--fg); background: var(--card); }
-.filters a.on { border-color: var(--accent); color: var(--accent); }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: .75rem; }
-.card h3 { margin: 0 0 .25rem; font-size: 1rem; }
-.badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: .05rem .5rem; border-radius: 999px; color: #fff; text-transform: uppercase; letter-spacing: .03em; }
-.badge.high { background: var(--high); } .badge.medium { background: var(--medium); } .badge.low { background: var(--low); }
-.badge.status { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-ul.evidence { padding-left: 1.1rem; margin: .5rem 0 0; }
-ul.evidence li { margin-bottom: .25rem; }
-.snippet { display: block; color: var(--muted); font-size: .85em; font-style: italic; }
-button { font: inherit; padding: .4rem .9rem; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-button.danger { color: var(--high); }
-form.inline { display: inline; }
-dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; }
-dt { color: var(--muted); }
-dd { margin: 0; overflow-wrap: anywhere; }
-img.recall { max-width: 100%; max-height: 220px; border-radius: 6px; border: 1px solid var(--border); }
-.empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
-.notice { padding: .6rem .9rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid; overflow-wrap: anywhere; }
-.notice.ok { border-color: var(--ok); color: var(--ok); }
-.notice.err { border-color: var(--high); color: var(--high); }
-header form.inline + form.inline { margin-left: .35rem; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  font: var(--text-base)/1.5 var(--font-sans);
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+a { color: var(--color-accent); }
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+header {
+  display: flex; flex-wrap: wrap; gap: calc(var(--spacing) * 3) calc(var(--spacing) * 6);
+  align-items: center; justify-content: space-between;
+  padding: calc(var(--spacing) * 3) clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--color-line);
+}
+header h1 { font-size: var(--text-lg); margin: 0; }
+header h1 a { display: inline-flex; align-items: center; min-height: 44px; color: inherit; text-decoration: none; }
+.header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--spacing) * 2) calc(var(--spacing) * 3); }
+main { padding: calc(var(--spacing) * 4) clamp(1rem, 4vw, 2rem); max-width: 1100px; margin: 0 auto; }
+footer {
+  max-width: 1100px; margin: 0 auto;
+  padding: calc(var(--spacing) * 2) clamp(1rem, 4vw, 2rem) calc(var(--spacing) * 6);
+}
+h2 { font-size: 1.35rem; overflow-wrap: anywhere; }
+.muted { color: var(--color-ink-3); font-size: var(--text-sm); }
+
+/* Links that act get a 44px target. */
+.back, .filters a { display: inline-flex; align-items: center; min-height: 44px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: calc(var(--spacing) * 2); margin: 0 0 calc(var(--spacing) * 4); }
+.filters a {
+  padding: 0 calc(var(--spacing) * 3.5);
+  border: 1px solid var(--color-ink-3); border-radius: 999px;
+  text-decoration: none; color: var(--color-ink); background: var(--color-card);
+}
+.filters a:hover { background: var(--color-sunk); }
+.filters a.on { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-soft); font-weight: 600; }
 .spacer { flex: 1; }
-.error-count { color: var(--high); }
+
+.card {
+  background: var(--color-card); border: 1px solid var(--color-line); border-radius: var(--radius-card);
+  padding: calc(var(--spacing) * 4); margin-bottom: calc(var(--spacing) * 3); min-width: 0;
+}
+.card h3 { margin: 0 0 calc(var(--spacing) * 1); font-size: 1rem; overflow-wrap: anywhere; }
+/* A match in the list opens from anywhere on its card: the name's link covers it. */
+.card.row { position: relative; }
+.card.row h3 a::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-card); }
+.card.row:hover { border-color: var(--color-ink-3); }
+
+/* Tier badges are solid fills; the status badge is an outline. */
+.badge {
+  display: inline-block; font-size: var(--text-xs); font-weight: 600;
+  padding: 0 calc(var(--spacing) * 2); border-radius: 999px; vertical-align: 0.1em;
+  border: 1px solid transparent;
+}
+.badge.high { background: var(--color-danger); color: var(--color-danger-ink); }
+.badge.medium { background: var(--color-warn); color: var(--color-warn-ink); }
+.badge.low { background: var(--color-sunk); color: var(--color-ink-2); border-color: var(--color-line); }
+.badge.status { background: transparent; color: var(--color-ink-3); border-color: var(--color-line); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: calc(var(--spacing) * 4); }
+.grid > .card { margin-bottom: 0; }
+ul.evidence { padding-left: 1.1rem; margin: calc(var(--spacing) * 2) 0 0; overflow-wrap: anywhere; }
+ul.evidence li { margin-bottom: calc(var(--spacing) * 1); }
+.snippet { display: block; color: var(--color-ink-3); font-size: var(--text-sm); font-style: italic; }
+
+/* One primary (accent-filled) button per page; every other button is secondary. */
+button {
+  font: inherit; min-height: 44px; padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
+  border-radius: var(--radius-control); border: 1px solid var(--color-ink-3);
+  background: var(--color-card); color: var(--color-ink); cursor: pointer;
+}
+button:hover { background: var(--color-sunk); }
+button.primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink); font-weight: 600; }
+button.primary:hover { background: var(--color-accent); text-decoration: underline; }
+button.danger { color: var(--color-danger); border-color: var(--color-danger); }
+button.danger:hover { background: var(--color-danger-soft); }
+button:disabled, button.primary:disabled {
+  background: var(--color-sunk); border-color: var(--color-line); color: var(--color-ink-3);
+  cursor: not-allowed; text-decoration: none;
+}
+form.inline { display: inline; }
+.actions { margin-top: calc(var(--spacing) * 4); display: flex; flex-wrap: wrap; gap: calc(var(--spacing) * 2); }
+
+dl { display: grid; grid-template-columns: max-content 1fr; gap: calc(var(--spacing) * 1) calc(var(--spacing) * 4); margin: 0; }
+dt { color: var(--color-ink-3); }
+dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+img.recall { max-width: 100%; max-height: 220px; border-radius: var(--radius-control); border: 1px solid var(--color-line); }
+summary { padding: calc(var(--spacing) * 2.75) 0; cursor: pointer; }
+details p { overflow-wrap: anywhere; }
+.empty { text-align: center; padding: calc(var(--spacing) * 12) calc(var(--spacing) * 4); color: var(--color-ink-3); }
+
+.notice {
+  padding: calc(var(--spacing) * 2.5) calc(var(--spacing) * 3.5); border-radius: var(--radius-control);
+  margin-bottom: calc(var(--spacing) * 4); border: 1px solid; overflow-wrap: anywhere;
+}
+.notice.ok { border-color: var(--color-ok); color: var(--color-ok); background: var(--color-ok-soft); }
+.notice.err { border-color: var(--color-danger); color: var(--color-danger); background: var(--color-danger-soft); }
+.error-count { color: var(--color-danger); }
 .flush-top { margin-top: 0; }
 .flush-bottom { margin-bottom: 0; }
-.actions { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* Light, Dark or System (/static/theme.js), as three buttons in one bordered row. Hidden until
+   the script runs, so it never shows a control that does nothing. */
+.theme-choice { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--spacing) * 3); }
+.segmented { display: inline-flex; border: 1px solid var(--color-ink-3); border-radius: var(--radius-control); overflow: hidden; }
+.segmented button { border: 0; border-radius: 0; background: var(--color-card); color: var(--color-ink-2); }
+.segmented button + button { border-left: 1px solid var(--color-ink-3); }
+.segmented button:hover { background: var(--color-sunk); }
+.segmented button[aria-pressed="true"] { background: var(--color-accent-soft); color: var(--color-accent); font-weight: 600; }
+.segmented button:focus-visible { outline-offset: -3px; }

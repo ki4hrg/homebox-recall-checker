@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Recall Checker{% endblock %}</title>
+  {# Render-blocking and before the stylesheet, so a stored theme applies before first paint. #}
+  <script src="/static/theme.js"></script>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -17,5 +19,16 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  <footer>
+    {# Shown by /static/theme.js; without it the device's setting decides. #}
+    <div class="theme-choice" data-theme-choice hidden>
+      <span class="muted" id="theme-label">Theme</span>
+      <div class="segmented" role="group" aria-labelledby="theme-label">
+        <button type="button" data-theme-value="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-value="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-theme-value="system" aria-pressed="true">System</button>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
