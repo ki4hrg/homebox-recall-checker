@@ -5,6 +5,24 @@ Cross-project standards live in https://github.com/ki4hrg/standards and are not 
 the entries below are this repo's exceptions to them and choices they leave open. The audit
 and John's answers behind them are in `docs/plans/standards-conformance.md`.
 
+## Index
+
+Every decision below is in force.
+
+- [Stays a public repo on the personal account](#2026-11-16--stays-a-public-repo-on-the-personal-account)
+- [Deploy mode B: versioned releases, published by the shared `image.yml`](#2026-11-16--deploy-mode-b-versioned-releases-published-by-the-shared-imageyml)
+- [Multi-arch release images; `:main` is amd64 only](#2026-11-16--multi-arch-release-images-main-is-amd64-only)
+- [`compose.example.yml` is a snippet for users, not a deployed stack](#2026-11-16--composeexampleyml-is-a-snippet-for-users-not-a-deployed-stack)
+- [No sign-in in the web UI](#2026-11-16--no-sign-in-in-the-web-ui)
+- [Python 3.13](#2026-11-16--python-313)
+- [Dependabot monthly, though the repo is public](#2026-11-16--dependabot-monthly-though-the-repo-is-public)
+- [Formatting commit](#2026-11-16--formatting-commit): one `ruff format` commit, ignored by `git blame`
+- [`/api/health` adds `version`; `/healthz` stays one release as a deprecated alias](#2026-11-16--apihealth-adds-version-healthz-stays-one-release-as-a-deprecated-alias)
+- [Settings refuse a bad configuration at boot](#2026-11-16--settings-refuse-a-bad-configuration-at-boot)
+- [UI input refused with a 400; one error page; notices are codes](#2026-11-16--ui-input-refused-with-a-400-one-error-page-notices-are-codes)
+- [Security headers, with no inline style or script](#2026-11-16--security-headers-with-no-inline-style-or-script)
+- [Feed downloads and request bodies are capped](#2026-11-16--feed-downloads-and-request-bodies-are-capped)
+
 ## 2026-11-16 — Stays a public repo on the personal account
 
 The standards move app repos into John's GitHub organization so they can share its
