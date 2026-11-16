@@ -175,4 +175,6 @@ uv run recall-checker check --dry-run
 Dependencies are locked in `uv.lock`, which CI and the image install exactly
 (`uv sync --locked`). After changing them in `pyproject.toml`, run `uv lock` and commit both.
 
-Recall sources (`sources/`) and the notifier (`notify/`) are small protocols, so new sources (FDA, Health Canada) or native notifiers can be added without touching the matcher. A source that changes how it normalizes records bumps its `parser_version`, which makes the next run re-fetch and re-parse that source in full.
+Recall sources (`sources/`) and the notifier (`notify/`) are small protocols, so new sources
+(FDA, Health Canada) or native notifiers can be added without touching the matcher. How the
+code is laid out and how a check runs: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).

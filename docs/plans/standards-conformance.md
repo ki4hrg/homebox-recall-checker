@@ -19,8 +19,8 @@ recall feeds, the notification services or the deploy host.
 | Hotfix: cross-site writes and unknown hosts (Q1, Q2) | done, released 0.2.2 | #1 | `5e8f677` |
 | 1 Pipeline (+ uv, ruff format, Dependabot) | done | #2 | `24a8bca` (merge commit, by hand, Q6) |
 | 2 Runtime (health, revision, config) | done, released 0.3.0 (#4, `dad4531`) | #3 | `cc71431` |
-| 3 Boundaries (UI input, errors) | in review; `automerge` allowed (checklist: only Phases 2 and 6 never take it); release 0.3.1 after | `fix/ui-input-and-errors` | |
-| 4 Agent docs | | | |
+| 3 Boundaries (UI input, errors) | done; release 0.3.1 to follow (Q8) | #5 | `e6015b4` |
+| 4 Agent docs | in review (`automerge`: docs only, no image) | `docs/agent-docs` | |
 | 5 Design/copy | proposed, small (Q13) | | |
 | 6 Stack | out (Q12) | | |
 
