@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import json
 import logging
 import re
 from datetime import date, datetime
 
 import httpx
 
-from .base import Recall
+from .base import Recall, read_limited
 
 log = logging.getLogger(__name__)
+
+# The full set was 28 MB in November 2026. The whole answer is held in memory and parsed into
+# Python objects several times its size, so the cap leaves room to grow but keeps a broken or
+# hostile server from exhausting a small host.
+MAX_RESPONSE_BYTES = 64 * 1024 * 1024
 
 # "Acme Corp. Recalls ...", "CPSC, Acme Announce Recall ...", "Acme Widgets Recalled Due to ..."
 _TITLE_BRAND = re.compile(
@@ -110,11 +116,19 @@ class CPSCSource:
             params["LastPublishDateStart"] = since.isoformat()
         else:
             params["RecallDateStart"] = "1900-01-01"
-        resp = self.client.get(self.base_url, params=params)
-        resp.raise_for_status()
-        data = resp.json()
+        body = bytearray()
+        with self.client.stream("GET", self.base_url, params=params) as resp:
+            resp.raise_for_status()
+            read_limited(resp, MAX_RESPONSE_BYTES, body.extend)
+        data = json.loads(body)
+        del body
+        if not isinstance(data, list):
+            raise ValueError("CPSC answered something other than a list of recalls")
         recalls = []
         for raw in data:
+            if not isinstance(raw, dict):
+                log.warning("Skipping a CPSC record that isn't an object")
+                continue
             try:
                 recalls.append(normalize(raw))
             except Exception:  # one malformed record shouldn't sink the sync

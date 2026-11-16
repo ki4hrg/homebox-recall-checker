@@ -103,6 +103,11 @@ Two checks stop *other web pages* from using your browser against the UI:
   name, so an address is safe) and `localhost`. Set it, and only those names (plus `localhost`
   and `127.0.0.1`, for the container healthcheck) are allowed; `*` turns the check off.
 
+The UI also sends headers that stop other sites framing it (against clickjacking) and allow no
+script, refuses request bodies over 16 KB, and only turns recall links from the feeds into links
+when they are `http(s)` URLs. Errors show a short message; the detail (a Homebox error, for
+instance) goes to the container log, never to the page.
+
 **Upgrading from 0.2.1 or earlier:** if you open the UI by a host name (through a proxy, or a LAN
 name such as `myserver.lan:8080`), set `PUBLIC_URL` to that address or add the name to
 `ALLOWED_HOSTS`, or the UI answers "Unknown host" (400). Opening it by IP address keeps working.

@@ -17,17 +17,24 @@ import io
 import logging
 import tempfile
 import zipfile
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import date
 
 import httpx
 
-from .base import Recall
+from .base import FeedTooLarge, Recall, read_limited
 
 log = logging.getLogger(__name__)
 
 FLAT_FILE_URL = "https://static.nhtsa.gov/odi/ffdd/rcl/FLAT_RCL_POST_2010.zip"
 RECALL_URL = "https://www.nhtsa.gov/recalls?nhtsaId={campno}"
+# Caps against a broken or hostile file on a small host. In November 2026 the zip was 15 MB, the
+# text inside it 314 MB and its longest row 3.3 KB. The zip goes to a temporary file (disk), the
+# text is read a row at a time, so memory holds one row plus the campaigns kept.
+MAX_ZIP_BYTES = 128 * 1024 * 1024
+MAX_TEXT_BYTES = 1024 * 1024 * 1024
+MAX_ROW_CHARS = 64 * 1024
 KINDS = {"C": "child seat", "E": "equipment", "T": "tire", "V": "vehicle"}
 
 # 0-based column indexes (RCL.txt numbers fields from 1)
@@ -142,6 +149,21 @@ class _Campaign:
         )
 
 
+def rows(text) -> Iterator[str]:
+    """``text``'s lines, skipping (and counting in the log) any longer than ``MAX_ROW_CHARS``,
+    so one huge line can't be read into memory whole."""
+    overlong = 0
+    while line := text.readline(MAX_ROW_CHARS):
+        if len(line) == MAX_ROW_CHARS and line[-1] not in "\r\n":
+            overlong += 1
+            while (rest := text.readline(MAX_ROW_CHARS)) and rest[-1] not in "\r\n":
+                pass
+            continue
+        yield line
+    if overlong:
+        log.warning("Skipped %d NHTSA rows over %d characters", overlong, MAX_ROW_CHARS)
+
+
 def parse(lines, types: set[str]) -> list[Recall]:
     """Group flat-file rows into one Recall per campaign, keeping only `types`."""
     campaigns: dict[str, _Campaign] = {}
@@ -183,14 +205,21 @@ class NHTSASource:
         with tempfile.TemporaryFile() as tmp:
             with self.client.stream("GET", self.url) as resp:
                 resp.raise_for_status()
-                for chunk in resp.iter_bytes():
-                    tmp.write(chunk)
+                read_limited(resp, MAX_ZIP_BYTES, tmp.write)
             tmp.seek(0)
             with zipfile.ZipFile(tmp) as zf:
-                name = next(n for n in zf.namelist() if n.lower().endswith(".txt"))
-                with zf.open(name) as fh:
+                info = next((i for i in zf.infolist() if i.filename.lower().endswith(".txt")), None)
+                if info is None:
+                    raise ValueError("the NHTSA zip holds no .txt file")
+                # zipfile never reads past the declared size, so checking it bounds the read.
+                if info.file_size > MAX_TEXT_BYTES:
+                    raise FeedTooLarge(
+                        f"the NHTSA file unpacks to {info.file_size} bytes, over the "
+                        f"{MAX_TEXT_BYTES} cap"
+                    )
+                with zf.open(info) as fh:
                     text = io.TextIOWrapper(fh, encoding="latin-1", newline="")
-                    recalls = parse(text, self.types)
+                    recalls = parse(rows(text), self.types)
         log.info(
             "NHTSA returned %d campaigns of types %s", len(recalls), ",".join(sorted(self.types))
         )

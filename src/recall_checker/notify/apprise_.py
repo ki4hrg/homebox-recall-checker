@@ -22,7 +22,11 @@ class AppriseNotifier:
             if cfg.add(config_path):
                 self.apobj.add(cfg)
             else:
-                log.error("Could not load Apprise config %s", config_path)
+                # APPRISE_CONFIG can be a URL with credentials in it: show only its scheme.
+                shown = config_path
+                if "://" in config_path:
+                    shown = config_path.split("://")[0] + "://…"
+                log.error("Could not load the Apprise config (APPRISE_CONFIG: %s)", shown)
 
     @property
     def configured(self) -> bool:

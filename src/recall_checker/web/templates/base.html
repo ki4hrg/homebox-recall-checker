@@ -11,6 +11,11 @@
     <h1><a href="/">Homebox Recall Checker</a></h1>
     {% block header_extra %}{% endblock %}
   </header>
-  <main>{% block content %}{% endblock %}</main>
+  <main>
+    {% if notice %}
+      <div class="notice {{ 'ok' if notice[1] else 'err' }}" role="status">{{ notice[0] }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

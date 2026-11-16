@@ -25,7 +25,8 @@ def maintenance_text(recall: Recall, tier: Tier, ui_link: str = "") -> str:
     if recall.models:
         lines += ["Models/parts: " + ", ".join(recall.models[:30]), ""]
     lines.append(f"Recall date: {recall.recall_date}  ·  Match confidence: {tier.name}")
-    lines.append(recall.url)
+    if recall.link:
+        lines.append(recall.link)
     if ui_link:
         lines.append(f"Review: {ui_link}")
     return "\n".join(lines)
@@ -45,7 +46,7 @@ def notification(entries: list[dict], ui_base: str = "") -> tuple[str, str]:
         block = [f"**{item['name']}** ({tier.name} confidence)"]
         if item.get("location"):
             block[0] += f" — {item['location']}"
-        block.append(f"[{recall.title}]({recall.url})")
+        block.append(f"[{recall.title}]({recall.link})" if recall.link else recall.title)
         if recall.hazards:
             block.append(f"Hazard: {' '.join(recall.hazards)[:300]}")
         if recall.remedies:
