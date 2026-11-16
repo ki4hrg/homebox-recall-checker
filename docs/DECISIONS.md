@@ -47,8 +47,8 @@ full version), the same tags the repo published before. Hosts pull `:latest` thr
 auto-update (Dockhand's, on John's host). `ci.yml` pushes `:main` and `:sha-<sha>` on every
 merge; nothing installed pulls them by default.
 
-The running revision is checked by hand after a release (the image's
-`org.opencontainers.image.revision` label, and `/api/health` once Phase 2 adds it).
+The running revision is checked by hand after a release (`/api/health`, added in 0.3.0, or the
+image's `org.opencontainers.image.revision` label).
 
 Rejected: a repo-local publish workflow (John chose to extend `image.yml` so every released
 tool publishes the same way, standards `decisions.md`); a webhook deploy.

@@ -55,12 +55,12 @@ own schedule. To cut a release:
 
 ```sh
 # merge a PR that bumps `version` in pyproject.toml; then, on that commit of main:
-gh release create v0.2.0 --generate-notes
+gh release create vX.Y.Z --generate-notes
 ```
 
-CI fails the release build if the tag doesn't match the `pyproject.toml` version. The first push
-creates the GHCR package as **private**, so either make it public or give the deploy host registry
-credentials.
+CI fails the release build if the tag doesn't match the `pyproject.toml` version. This repo's GHCR
+package is public. In a fork, the first push creates the fork's package as **private**, so either
+make it public or give the deploy host registry credentials.
 
 ### Health and the running version
 
