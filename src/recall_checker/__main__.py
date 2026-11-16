@@ -54,9 +54,11 @@ def cmd_check(s: Settings, dry_run: bool) -> int:
         item = runner.db.get_item(row["item_id"]) or {}
         recall = runner.db.get_recall(row["recall_key"])
         name = item.get("name", "?")[:40]
-        print(f"  [{Tier(row['tier']).name:<6}] {row['status']:<9} {name:<40} "
-              f"<- {recall.label if recall else row['recall_key']}: "
-              f"{recall.title[:70] if recall else ''}")
+        print(
+            f"  [{Tier(row['tier']).name:<6}] {row['status']:<9} {name:<40} "
+            f"<- {recall.label if recall else row['recall_key']}: "
+            f"{recall.title[:70] if recall else ''}"
+        )
     return 1 if res.errors else 0
 
 
@@ -83,8 +85,11 @@ def cmd_serve(s: Settings) -> int:
         log.warning("Homebox not reachable yet (%s); will retry on schedule", exc)
 
     sched = BackgroundScheduler(daemon=True)
-    trigger = (CronTrigger.from_crontab(s.check_cron) if s.check_cron
-               else IntervalTrigger(hours=s.check_interval_hours))
+    trigger = (
+        CronTrigger.from_crontab(s.check_cron)
+        if s.check_cron
+        else IntervalTrigger(hours=s.check_interval_hours)
+    )
     job = sched.add_job(runner.run, trigger, id="check", max_instances=1, coalesce=True)
     sched.start()
     if s.run_on_startup:
@@ -98,26 +103,36 @@ def cmd_serve(s: Settings) -> int:
         shown = ", ".join([*names, "localhost"] + (["any IP address"] if any_ip else []))
         log.info("Web UI answers to: %s (ALLOWED_HOSTS)", shown)
 
-    uvicorn.run(create_app(runner), host=s.ui_host, port=s.ui_port,
-                log_level=s.log_level.lower(), access_log=False)
+    uvicorn.run(
+        create_app(runner),
+        host=s.ui_host,
+        port=s.ui_port,
+        log_level=s.log_level.lower(),
+        access_log=False,
+    )
     sched.shutdown(wait=False)
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="recall-checker",
-                                     description="Check Homebox items against product recalls")
+    parser = argparse.ArgumentParser(
+        prog="recall-checker", description="Check Homebox items against product recalls"
+    )
     sub = parser.add_subparsers(dest="cmd")
     sub.add_parser("serve", help="run the scheduler and web UI (default)")
     check = sub.add_parser("check", help="run one check cycle and exit")
-    check.add_argument("--dry-run", action="store_true",
-                       help="match and record, but don't notify or write to Homebox")
+    check.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="match and record, but don't notify or write to Homebox",
+    )
     sub.add_parser("test-notify", help="send a test notification via Apprise")
     args = parser.parse_args(argv)
 
     s = get_settings()
-    logging.basicConfig(level=s.log_level.upper(),
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=s.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
     if args.cmd == "check":

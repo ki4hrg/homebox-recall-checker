@@ -1,0 +1,46 @@
+name: release
+
+# Deploy mode B only: a released tool other people install (docs/core/deploy.md,
+# docs/profiles/python-service.md, Released tools). Publishing a GitHub release for a
+# `vX.Y.Z` tag (`gh release create vX.Y.Z --generate-notes`) checks the tag against
+# pyproject.toml, then pushes :X.Y.Z, :X.Y and :latest for amd64 and arm64 as one
+# image. A pre-release pushes only its full version. Tag a commit on main, which ci.yml
+# has already checked; ci.yml keeps testing PRs and main and drops its `deploy` job.
+
+on:
+  release:
+    types: [published]
+
+# One publish per release; a re-run replaces it rather than racing it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # The tag is the release's name for the code; pyproject.toml is what the package
+      # reports. A mismatch means the bump wasn't merged before tagging.
+      - name: Check the tag matches pyproject.toml
+        run: |
+          want=${GITHUB_REF_NAME#v}
+          have=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          if [ "$want" != "$have" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match pyproject.toml version $have."; exit 1
+          fi
+
+  image:
+    needs: version
+    permissions:
+      contents: read
+      packages: write
+    uses: ki4hrg/standards/.github/workflows/image.yml@v1
+    with:
+      push: true
+      release-tags: true
+      multi-arch: true

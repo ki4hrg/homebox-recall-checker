@@ -4,7 +4,7 @@ services:
   recall-checker:
     # :latest moves only when a GitHub release is published, so Dockhand's
     # auto-update ("Check for updates" / scheduled updates) picks up each release.
-    # Pin to e.g. :0.1 to only take patch releases, or :main to track every commit.
+    # Pin to e.g. :0.1 to only take patch releases. :main tracks every commit, amd64 only.
     image: ${RECALL_CHECKER_IMAGE:-ghcr.io/ki4hrg/homebox-recall-checker:latest}
     pull_policy: always            # tag is reused across builds; always pull the fresh one
     restart: unless-stopped

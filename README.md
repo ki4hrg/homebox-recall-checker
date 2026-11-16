@@ -42,19 +42,19 @@ Requires **Homebox 0.26+**, which has the `/v1/entities` API.
 
 ### Images, releases and updates
 
-GitHub Actions builds multi-arch images (amd64 and arm64) and pushes them to GHCR:
+GitHub Actions builds the images and pushes them to GHCR:
 
-| Event | Tags |
-|---|---|
-| Push to `main` | `:main`, `:sha-<commit>` |
-| Published GitHub release `vX.Y.Z` | `:X.Y.Z`, `:X.Y`, `:latest` (`:latest` is skipped for pre-releases) |
+| Event | Tags | Platforms |
+|---|---|---|
+| Merge to `main` | `:main`, `:sha-<commit>` | amd64 |
+| Published GitHub release `vX.Y.Z` | `:X.Y.Z`, `:X.Y`, `:latest`, `:sha-<commit>` (a pre-release gets only its full version) | amd64 and arm64 |
 
 The compose example uses `:latest`, which only moves when you publish a release. Turn on Dockhand's
 auto-update (or use **Check for updates**) for the container, and each release rolls out on its
 own schedule. To cut a release:
 
 ```sh
-# bump `version` in pyproject.toml, commit, push; then:
+# merge a PR that bumps `version` in pyproject.toml; then, on that commit of main:
 gh release create v0.2.0 --generate-notes
 ```
 
@@ -116,7 +116,10 @@ confirm/dismiss will answer 403.
 | `PURCHASE_GRACE_DAYS` | `365` | |
 | `RECALL_SOURCES` | `cpsc,nhtsa` | Which feeds to check |
 | `NHTSA_TYPES` | `C,E` | `C` child seats, `E` equipment, `T` tires, `V` vehicles |
+| `CPSC_BASE_URL` | CPSC's recall API | Override only for testing |
+| `NHTSA_FLAT_FILE_URL` | NHTSA's recall flat file | Override only for testing |
 | `DATA_DIR` | `/data` | SQLite location |
+| `UI_HOST` | `0.0.0.0` | Address the UI listens on inside the container |
 | `UI_PORT` | `8080` | |
 | `LOG_LEVEL` | `INFO` | |
 
@@ -135,11 +138,16 @@ failed, Apprise's reason (connection refused, auth error, and so on). From the h
 
 ## Development
 
+Needs [uv](https://docs.astral.sh/uv/); it installs Python 3.13 (`.python-version`) if missing.
+
 ```sh
-python -m venv .venv && .venv/bin/pip install -e '.[dev]'
+uv sync                           # .venv from uv.lock, dev tools included
 cp .env.example .env              # point at a Homebox instance
-.venv/bin/pytest && .venv/bin/ruff check src tests
-.venv/bin/recall-checker check --dry-run
+uv run ruff check && uv run ruff format --check && uv run pytest
+uv run recall-checker check --dry-run
 ```
+
+Dependencies are locked in `uv.lock`, which CI and the image install exactly
+(`uv sync --locked`). After changing them in `pyproject.toml`, run `uv lock` and commit both.
 
 Recall sources (`sources/`) and the notifier (`notify/`) are small protocols, so new sources (FDA, Health Canada) or native notifiers can be added without touching the matcher. A source that changes how it normalizes records bumps its `parser_version`, which makes the next run re-fetch and re-parse that source in full.

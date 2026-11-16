@@ -10,6 +10,7 @@ pulled from free text. Signals, strongest first:
 
 An item bought well after a recall, or before the affected units were made, is capped at low.
 """
+
 from __future__ import annotations
 
 import re
@@ -27,20 +28,115 @@ _WORD = re.compile(r"[a-z0-9]+")
 _DIGITS = re.compile(r"\d{8,14}")
 
 CORP_WORDS = {
-    "inc", "incorporated", "llc", "l", "c", "co", "corp", "corporation", "company", "ltd",
-    "limited", "plc", "gmbh", "ag", "sa", "srl", "bv", "pty", "lp", "llp", "the", "and",
-    "dba", "group", "holdings", "international", "intl", "usa", "us", "america", "north",
-    "brands", "brand", "products", "industries", "enterprises", "trading", "technology",
-    "technologies", "tech", "ecommerce", "e", "commerce",
+    "inc",
+    "incorporated",
+    "llc",
+    "l",
+    "c",
+    "co",
+    "corp",
+    "corporation",
+    "company",
+    "ltd",
+    "limited",
+    "plc",
+    "gmbh",
+    "ag",
+    "sa",
+    "srl",
+    "bv",
+    "pty",
+    "lp",
+    "llp",
+    "the",
+    "and",
+    "dba",
+    "group",
+    "holdings",
+    "international",
+    "intl",
+    "usa",
+    "us",
+    "america",
+    "north",
+    "brands",
+    "brand",
+    "products",
+    "industries",
+    "enterprises",
+    "trading",
+    "technology",
+    "technologies",
+    "tech",
+    "ecommerce",
+    "e",
+    "commerce",
 }
-GENERIC_BRANDS = {"generic", "unknown", "none", "na", "n a", "other", "various", "unbranded",
-                  "no brand", "homemade", "diy", "custom"}
+GENERIC_BRANDS = {
+    "generic",
+    "unknown",
+    "none",
+    "na",
+    "n a",
+    "other",
+    "various",
+    "unbranded",
+    "no brand",
+    "homemade",
+    "diy",
+    "custom",
+}
 NAME_STOPWORDS = {
-    "the", "and", "with", "for", "of", "a", "an", "in", "on", "to", "by", "from", "set", "kit",
-    "new", "pack", "piece", "pcs", "inch", "ft", "black", "white", "gray", "grey", "red",
-    "blue", "green", "silver", "small", "large", "medium", "mini", "pro", "plus", "series",
-    "model", "recall", "recalls", "recalled", "due", "risk", "hazard", "injury", "serious",
-    "death", "violate", "mandatory", "standard", "sold", "exclusively",
+    "the",
+    "and",
+    "with",
+    "for",
+    "of",
+    "a",
+    "an",
+    "in",
+    "on",
+    "to",
+    "by",
+    "from",
+    "set",
+    "kit",
+    "new",
+    "pack",
+    "piece",
+    "pcs",
+    "inch",
+    "ft",
+    "black",
+    "white",
+    "gray",
+    "grey",
+    "red",
+    "blue",
+    "green",
+    "silver",
+    "small",
+    "large",
+    "medium",
+    "mini",
+    "pro",
+    "plus",
+    "series",
+    "model",
+    "recall",
+    "recalls",
+    "recalled",
+    "due",
+    "risk",
+    "hazard",
+    "injury",
+    "serious",
+    "death",
+    "violate",
+    "mandatory",
+    "standard",
+    "sold",
+    "exclusively",
 }
 # Purchase dates are often approximate; allow this much before the first affected unit.
 MFG_SLACK = timedelta(days=30)
@@ -89,10 +185,7 @@ def name_tokens(text: str, exclude: set[str] = frozenset()) -> set[str]:
     # Drop decimal specs whole first ("4.0Ah" would otherwise leave "0ah").
     text = re.sub(r"\b\d+(?:\.\d+)?[a-z]*\b", " ", _SYMBOLS.sub("", text).lower())
     words = _WORD.findall(text)
-    return {
-        _stem(w) for w in words
-        if len(w) >= 3 and w not in NAME_STOPWORDS and w not in exclude
-    }
+    return {_stem(w) for w in words if len(w) >= 3 and w not in NAME_STOPWORDS and w not in exclude}
 
 
 def model_tokens(text: str) -> set[str]:
@@ -148,10 +241,10 @@ class _Prepared:
     models: set[str]
     upcs: set[str]
     brands: list[tuple[str, ...]]
-    words: set[str]           # lowercase words in title + product names (for brand-in-title)
-    product_terms: set[str]   # stemmed product-name words for the low tier
-    struct: dict[str, str]    # normalized -> original, for source-provided model/part numbers
-    lists_models: bool        # recall enumerates affected models (in any form)
+    words: set[str]  # lowercase words in title + product names (for brand-in-title)
+    product_terms: set[str]  # stemmed product-name words for the low tier
+    struct: dict[str, str]  # normalized -> original, for source-provided model/part numbers
+    lists_models: bool  # recall enumerates affected models (in any form)
 
 
 class RecallIndex:
@@ -197,7 +290,9 @@ _MODEL_WORD = re.compile(r"\bmodel", re.I)
 _TITLE_TAIL = re.compile(r"[;,]?\s*\b(?:due\s+to|because|after|following)\b.*$", re.I)
 _SOLD_CLAUSE = re.compile(
     r"[;,]?\s*\bsold\s+(?:exclusively\s+)?(?:at|on|by|through|online)\b"
-    r".*?(?=\s+(?:recalled|due\s+to)\b|;|$)", re.I)
+    r".*?(?=\s+(?:recalled|due\s+to)\b|;|$)",
+    re.I,
+)
 
 
 def product_title(title: str) -> str:
@@ -255,8 +350,10 @@ def _brand_matches(item_brand: tuple[str, ...], recall_brand: tuple[str, ...]) -
     small, big = (a, b) if len(a) <= len(b) else (b, a)
     # "lithonia" vs "lithonia lighting": all of the shorter name's words appear, and
     # the overlap isn't a single tiny word.
-    return small <= big and (len(small) > 1 or len(next(iter(small))) >= 3) and (
-        item_brand[0] == recall_brand[0]
+    return (
+        small <= big
+        and (len(small) > 1 or len(next(iter(small))) >= 3)
+        and (item_brand[0] == recall_brand[0])
     )
 
 
@@ -341,25 +438,34 @@ class Matcher:
                 t, s = None, 0.0
             if t is not None:
                 where = "model number" if how == "model" else "name"
-                evidence.append(Evidence(
-                    "model", f"Item {where} matches recalled model/part “{original}”"))
+                evidence.append(
+                    Evidence("model", f"Item {where} matches recalled model/part “{original}”")
+                )
                 if tier is None or t > tier:
                     tier, score = t, s
 
         exact = sorted(models & p.models)
         if exact and not any(e.signal == "model" for e in evidence):
             model = max(exact, key=len)
-            evidence.append(Evidence("model", f"Model {model} appears in recall",
-                                     snippet(p.text, model)))
+            evidence.append(
+                Evidence("model", f"Model {model} appears in recall", snippet(p.text, model))
+            )
             t, s = (Tier.high, 3.5) if brand_reason else (Tier.medium, 2.5)
             if tier is None or t > tier:
                 tier, score = t, s
-        elif brand_reason and (line := _item_product_line(item)) and re.search(
-            rf"\b{re.escape(line)}\b", p.text, re.I
+        elif (
+            brand_reason
+            and (line := _item_product_line(item))
+            and re.search(rf"\b{re.escape(line)}\b", p.text, re.I)
         ):
             # Alphabetic model/product-line names (IKEA "MALM") are too generic on their own.
-            evidence.append(Evidence("model", f"Product line “{line}” appears in recall",
-                                     snippet(p.text, norm_model(line))))
+            evidence.append(
+                Evidence(
+                    "model",
+                    f"Product line “{line}” appears in recall",
+                    snippet(p.text, norm_model(line)),
+                )
+            )
             tier, score = Tier.medium if tier is None else tier, max(score, 2.4)
         elif brand_reason and models:
             # Variant/prefix: recall says "TL909", item says "TL909-50" (or vice versa).
@@ -368,9 +474,13 @@ class Matcher:
                     continue
                 for rm in p.models:
                     if len(rm) >= 5 and (rm.startswith(im) or im.startswith(rm)):
-                        evidence.append(Evidence(
-                            "model-variant", f"Item model {im} ≈ recall model {rm}",
-                            snippet(p.text, rm)))
+                        evidence.append(
+                            Evidence(
+                                "model-variant",
+                                f"Item model {im} ≈ recall model {rm}",
+                                snippet(p.text, rm),
+                            )
+                        )
                         if tier is None:
                             tier, score = Tier.medium, 2.2
                         break
@@ -386,17 +496,23 @@ class Matcher:
                     exclude |= set(b)
                 item_terms = name_tokens(item.get("name") or "", exclude)
                 shared = item_terms & (p.product_terms - exclude)
-                if shared and len(shared) / max(len(item_terms), 1) >= 0.5 and any(
-                    len(w) >= 4 for w in shared
+                if (
+                    shared
+                    and len(shared) / max(len(item_terms), 1) >= 0.5
+                    and any(len(w) >= 4 for w in shared)
                 ):
-                    evidence.append(Evidence(
-                        "name", f"Product words in common: {', '.join(sorted(shared))}"))
+                    evidence.append(
+                        Evidence("name", f"Product words in common: {', '.join(sorted(shared))}")
+                    )
                     ratio = len(shared) / max(len(item_terms), 1)
                     # Every distinctive word of the item name (at least two) is in the recall,
                     # unless we know the item's model and the recall lists models without it.
                     has_model = bool(norm_model(item.get("modelNumber") or ""))
-                    strong = (ratio == 1.0 and len(shared) >= 2
-                              and not ((has_model or models) and p.lists_models))
+                    strong = (
+                        ratio == 1.0
+                        and len(shared) >= 2
+                        and not ((has_model or models) and p.lists_models)
+                    )
                     tier = Tier.medium if strong else Tier.low
                     score = (2.0 if strong else 1.0) + ratio * 0.5
 
@@ -409,16 +525,22 @@ class Matcher:
         except ValueError:
             bought = None
         if bought and r.manufactured_from and bought < r.manufactured_from - MFG_SLACK:
-            evidence.append(Evidence(
-                "purchase-date",
-                f"Purchased {bought}, before affected units were made "
-                f"({r.manufactured_from} to {r.manufactured_to or '?'})"))
+            evidence.append(
+                Evidence(
+                    "purchase-date",
+                    f"Purchased {bought}, before affected units were made "
+                    f"({r.manufactured_from} to {r.manufactured_to or '?'})",
+                )
+            )
             tier, score = Tier.low, min(score, 1.0) - 0.5
         elif bought and r.recall_date and bought > r.recall_date + self.grace:
-            evidence.append(Evidence(
-                "purchase-date",
-                f"Purchased {bought} — more than {self.grace.days} days after the "
-                f"recall ({r.recall_date}); likely a post-recall unit"))
+            evidence.append(
+                Evidence(
+                    "purchase-date",
+                    f"Purchased {bought} — more than {self.grace.days} days after the "
+                    f"recall ({r.recall_date}); likely a post-recall unit",
+                )
+            )
             tier, score = Tier.low, min(score, 1.0) - 0.5
 
         return Match(r.key, tier, round(score, 3), evidence)

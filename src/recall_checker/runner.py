@@ -1,4 +1,5 @@
 """One check cycle: sync recalls -> sync items -> match -> notify -> write back."""
+
 from __future__ import annotations
 
 import ctypes
@@ -52,8 +53,14 @@ class RunResult:
 
 
 class Runner:
-    def __init__(self, settings: Settings, db: DB, sources: list[RecallSource],
-                 homebox: HomeboxClient, notifier: Notifier):
+    def __init__(
+        self,
+        settings: Settings,
+        db: DB,
+        sources: list[RecallSource],
+        homebox: HomeboxClient,
+        notifier: Notifier,
+    ):
         self.s = settings
         self.db = db
         self.sources = sources
@@ -138,18 +145,24 @@ class Runner:
         if not pending:
             return
         if not self.notifier.configured:
-            log.warning("%d matches pending notification but no notifier is configured",
-                        len(pending))
+            log.warning(
+                "%d matches pending notification but no notifier is configured", len(pending)
+            )
             return
         entries = []
         for row in pending:
             item, recall = self.db.get_item(row["item_id"]), self.db.get_recall(row["recall_key"])
             if not item or not recall:
                 continue
-            entries.append({
-                "item": item, "recall": recall, "tier": Tier(row["tier"]),
-                "item_link": self.item_link(item["id"]), "match_id": row["id"],
-            })
+            entries.append(
+                {
+                    "item": item,
+                    "recall": recall,
+                    "tier": Tier(row["tier"]),
+                    "item_link": self.item_link(item["id"]),
+                    "match_id": row["id"],
+                }
+            )
         if not entries:
             return
         title, body = messages.notification(entries, self.s.public_url.rstrip("/"))
@@ -205,8 +218,14 @@ class Runner:
         log.info(
             "Check done in %.1fs: %d recalls (%d changed), %d items (%d refreshed), "
             "%d new matches, %d notified, %d written back%s",
-            res.duration_s, res.recalls_total, res.recalls_changed, res.items_total,
-            res.items_refreshed, res.new_matches, res.notified, res.written_back,
+            res.duration_s,
+            res.recalls_total,
+            res.recalls_changed,
+            res.items_total,
+            res.items_refreshed,
+            res.new_matches,
+            res.notified,
+            res.written_back,
             f", errors: {res.errors}" if res.errors else "",
         )
         return res
