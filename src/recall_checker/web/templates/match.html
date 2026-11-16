@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block title %}{{ m.item.name }} — Recall Checker{% endblock %}
 {% block content %}
-<p><a href="/">← All matches</a></p>
+<p><a class="back" href="/">← All Matches</a></p>
 <h2 class="flush-top">
-  <span class="badge {{ m.tier.name }}">{{ m.tier.name }}</span>
+  <span class="badge {{ m.tier.name }}">{{ m.tier.name|capitalize }}</span>
   {{ m.item.name }}
-  <span class="badge status">{{ m.status }}</span>
+  <span class="badge status">{{ m.status|capitalize }}</span>
 </h2>
 
 <div class="card">
-  <strong>Why this matched</strong>
+  <h3>Why It Matched</h3>
   <ul class="evidence">
     {% for e in m.evidence %}
       <li>{{ e.detail }}{% if e.snippet %}<span class="snippet">“{{ e.snippet }}”</span>{% endif %}</li>
@@ -19,13 +19,13 @@
     {% if m.status != "confirmed" %}
     <form class="inline" method="post" action="/match/{{ m.id }}/status">
       <input type="hidden" name="status" value="confirmed">
-      <button class="primary">Confirm — this is my item{% if settings.writeback and not m.writeback_at %} (tag in Homebox){% endif %}</button>
+      <button class="primary">Confirm{% if settings.writeback and not m.writeback_at %} and Tag in Homebox{% endif %}</button>
     </form>
     {% endif %}
     {% if m.status != "dismissed" %}
     <form class="inline" method="post" action="/match/{{ m.id }}/status">
       <input type="hidden" name="status" value="dismissed">
-      <button class="danger">Dismiss — not affected</button>
+      <button class="danger">Dismiss</button>
     </form>
     {% endif %}
     {% if m.status != "new" %}
@@ -44,7 +44,7 @@
 
 <div class="grid">
   <div class="card">
-    <h3>Your item</h3>
+    <h3>Homebox Item</h3>
     <dl>
       <dt>Name</dt><dd><a href="{{ m.item_link }}" target="_blank" rel="noopener">{{ m.item.name }}</a></dd>
       {% if m.item.manufacturer %}<dt>Manufacturer</dt><dd>{{ m.item.manufacturer }}</dd>{% endif %}
@@ -65,7 +65,7 @@
       <dt>Date</dt><dd>{{ r.recall_date }}</dd>
       {% if r.kind %}<dt>Type</dt><dd>{{ r.kind|capitalize }}</dd>{% endif %}
       {% if r.manufactured_from or r.manufactured_to %}<dt>Made</dt><dd>{{ r.manufactured_from or "?" }} to {{ r.manufactured_to or "?" }}</dd>{% endif %}
-      {% if r.models %}<dt>Models / parts</dt><dd>{{ r.models|join(", ") }}</dd>{% endif %}
+      {% if r.models %}<dt>Models / Parts</dt><dd>{{ r.models|join(", ") }}</dd>{% endif %}
       {% if r.brands %}<dt>Firms</dt><dd>{{ r.brands|join("; ") }}</dd>{% endif %}
       {% if r.units %}<dt>Units</dt><dd>{{ r.units }}</dd>{% endif %}
       {% if r.hazards %}<dt>Hazard</dt><dd>{{ r.hazards|join(" ") }}</dd>{% endif %}
@@ -75,7 +75,7 @@
     </dl>
     {% set images = r.image_links %}
     {% if images %}<p><img class="recall" src="{{ images[0] }}" alt="Recalled product" loading="lazy"></p>{% endif %}
-    <details><summary>Full description</summary><p>{{ r.description }}</p></details>
+    <details><summary>Full Description</summary><p>{{ r.description }}</p></details>
   </div>
   {% endif %}
 </div>

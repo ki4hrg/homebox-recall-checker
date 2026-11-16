@@ -20,8 +20,8 @@ recall feeds, the notification services or the deploy host.
 | 1 Pipeline (+ uv, ruff format, Dependabot) | done | #2 | `24a8bca` (merge commit, by hand, Q6) |
 | 2 Runtime (health, revision, config) | done, released 0.3.0 (#4, `dad4531`) | #3 | `cc71431` |
 | 3 Boundaries (UI input, errors) | done; release 0.3.1 to follow (Q8) | #5 | `e6015b4` |
-| 4 Agent docs | in review (`automerge`: docs only, no image) | `docs/agent-docs` | |
-| 5 Design/copy | proposed, small (Q13) | | |
+| 4 Agent docs | done | #7 | `2eccf11` |
+| 5 Design/copy | in review (`automerge`); ships in 0.3.1 with Phase 3 | `fix/ui-design` | |
 | 6 Stack | out (Q12) | | |
 
 ## The audit
@@ -231,7 +231,8 @@ console script, `pydantic-settings`, ruff and pytest already match.
 - **Contrast (WCAG AA 4.5:1 for normal text):** primary button in dark mode, white on `#7aa2ff`:
   **2.49**; `medium` badge, white on `#e08a00`: **2.69**; `low` badge, white on `#6b7d8f`:
   **4.24**; Dismiss button text `#c62828` on the dark card: **2.93**; the success notice
-  `#2e7d32` on the dark page: **3.56**. Light mode passes (primary 6.47, `high` 5.62, muted 4.99).
+  `#2e7d32` on the dark page: **3.56**. (Phase 5 found a sixth: the error notice and error count,
+  `#c62828` on the dark page, **3.25**.) Light mode passes (primary 6.47, `high` 5.62, muted 4.99).
 - **Tokens:** `--bg`, `--fg`, `--muted`, `--card`, `--border`, `--accent`, `--high/medium/low`,
   `--ok`; the standard names (`page`, `card`, `accent`, `accent-ink`, status `ok`/`warn`/`danger`
   with `-ink`) aren't used. No Tailwind, so they'd be CSS custom properties (their spelling is an

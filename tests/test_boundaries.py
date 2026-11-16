@@ -2,6 +2,7 @@
 
 import io
 import logging
+import re
 import zipfile
 from pathlib import Path
 
@@ -147,7 +148,7 @@ def test_writeback_failure_shows_fixed_message_and_logs_detail(ui, monkeypatch, 
     assert resp.headers["location"] == f"/match/{match_id}?notice=writeback-failed"
     page = client.get(resp.headers["location"])
     assert page.status_code == 200
-    assert "Saved, but writing the recall to Homebox failed." in page.text
+    assert "Saved, but couldn&#39;t write to Homebox." in page.text  # autoescaped
     assert 'class="notice err"' in page.text
     assert "database is locked" not in page.text
     assert "database is locked" in caplog.text
@@ -251,7 +252,9 @@ def test_security_headers_on_every_answer(ui, path):
     resp = client.get(path)
     csp = resp.headers["content-security-policy"]
     assert "frame-ancestors 'none'" in csp and "default-src 'none'" in csp
-    assert "script-src" not in csp  # falls back to default-src 'none': no script at all
+    # Scripts only from this origin (the theme script): never inline, never another host.
+    assert "script-src 'self';" in csp
+    assert "unsafe-inline" not in csp and "unsafe-eval" not in csp
     assert resp.headers["x-frame-options"] == "DENY"
     assert resp.headers["x-content-type-options"] == "nosniff"
     assert resp.headers["referrer-policy"] == "same-origin"
@@ -264,11 +267,14 @@ def test_security_headers_on_guard_refusals(ui):
 
 
 def test_templates_have_no_inline_script_or_style():
-    # The CSP allows neither; an inline one would silently not apply.
+    # The CSP allows neither; an inline one would silently not apply. A script is a file under
+    # /static/, loaded by src; inline event handlers (onclick=…) count as inline script.
     templates = Path(guards.__file__).parent / "templates"
     for page in templates.glob("*.html"):
         text = page.read_text()
-        assert "<script" not in text and "style=" not in text and "<style" not in text, page.name
+        assert "style=" not in text and "<style" not in text, page.name
+        assert not re.search(r"<script(?![^>]*\bsrc=\"/static/)", text), page.name
+        assert not re.search(r"\son[a-z]+\s*=", text), page.name
 
 
 def test_large_body_refused(ui):

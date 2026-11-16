@@ -37,7 +37,7 @@ way they are: `docs/DECISIONS.md`.
 ## The check cycle
 
 `Runner.run(dry_run)` (`runner.py`). It takes a non-blocking lock: a second start while one runs
-returns `None` and does nothing. The lock is per process: the scheduler and **Run check now**
+returns `None` and does nothing. The lock is per process: the scheduler and **Run Check**
 share it, but `recall-checker check` (say, through `docker exec`) builds its own `Runner` and
 can overlap a scheduled run. A failed source sync or a failed write-back of one match is
 recorded in the run's `errors` and the run carries on; a failure anywhere else (Homebox down
@@ -146,7 +146,7 @@ the manual-check thread and the web handlers, under an `RLock`. All SQL is param
 
 `CHECK_CRON` (a crontab line, in the container's `TZ`) or every `CHECK_INTERVAL_HOURS`, as one
 APScheduler job with `max_instances=1` and `coalesce=True`, plus a one-off job at startup when
-`RUN_ON_STARTUP` is on. **Run check now** starts `Runner.run` in a daemon thread. All three
+`RUN_ON_STARTUP` is on. **Run Check** starts `Runner.run` in a daemon thread. All three
 meet the same lock, so the server's checks never overlap (a CLI `check` is a separate process).
 
 ## Configuration
@@ -162,7 +162,10 @@ is required and how compose guards it.
 
 Server-rendered Jinja templates (`index.html`: the match list with status and tier filters and
 the last run; `match.html`: one match, its evidence and the Confirm / Dismiss / Reopen form;
-`error.html`), one stylesheet, no script. Confirming a match writes it back at once when
+`error.html`), one stylesheet (`static/style.css`: the standard token names, light and dark,
+checked for contrast by `tests/test_design.py`) and one script, `static/theme.js`, which only
+applies and switches the Light / Dark / System theme (in the footer; stored in the browser's
+`localStorage`, nothing on the server). Confirming a match writes it back at once when
 `WRITEBACK` is on (`Runner.write_back_match`); a failure keeps the status and the next check
 retries. Dismissing or reopening removes nothing already written to Homebox, and
 `writeback_at` and `notified_at` stay set, so a match reopened and confirmed again is neither
@@ -176,9 +179,9 @@ There is no sign-in (`docs/DECISIONS.md`, "No sign-in in the web UI"): who may u
 decided by the network or the reverse proxy's auth in front of it. Every route is behind the
 same middleware stack in `src/recall_checker/web/`, outermost first:
 
-1. `SecurityHeaders` (`guards.py`): CSP (`default-src 'none'`, own stylesheet, http(s) images,
-   `form-action 'self'`, `frame-ancestors 'none'`), `X-Frame-Options: DENY`, `nosniff`,
-   `Referrer-Policy: same-origin`, on every answer, refusals included.
+1. `SecurityHeaders` (`guards.py`): CSP (`default-src 'none'`, own stylesheet and script,
+   http(s) images, `form-action 'self'`, `frame-ancestors 'none'`), `X-Frame-Options: DENY`,
+   `nosniff`, `Referrer-Policy: same-origin`, on every answer, refusals included.
 2. `HostGuard`: refuses (400) a `Host` not in `ALLOWED_HOSTS` (default: `PUBLIC_URL`'s host, any
    IP address, `localhost`), against DNS rebinding. Loopback always passes, for the healthcheck.
 3. `CrossSiteGuard`: refuses (403) any method other than GET, HEAD and OPTIONS unless
@@ -195,7 +198,7 @@ same middleware stack in `src/recall_checker/web/`, outermost first:
 | `/test-notify` | POST | none | Host, cross-site, body size | none | Sends a test message to every Apprise target; keeps the result (with Apprise's reason on a failure) in memory and redirects to `/?notice=test` |
 | `/api/health` | GET | none | Host (loopback always passes) | none | Nothing: `{ ok, revision, version }` |
 | `/healthz` (deprecated) | GET | none | Host | none | Reads SQLite: the last run |
-| `/static/*` | GET | none | Host | Starlette's `StaticFiles` (stays inside the package's `static/`) | The stylesheet |
+| `/static/*` | GET | none | Host | Starlette's `StaticFiles` (stays inside the package's `static/`) | The stylesheet and the theme script |
 
 ## Errors
 

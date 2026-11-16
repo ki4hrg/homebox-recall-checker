@@ -27,7 +27,7 @@ def test_pages_and_actions(env):  # noqa: F811
 
     sleeper = next(r for r in runner.db.list_matches() if r["item_id"] == "i2")
     detail = client.get(f"/match/{sleeper['id']}")
-    assert detail.status_code == 200 and "Why this matched" in detail.text
+    assert detail.status_code == 200 and "Why It Matched" in detail.text
 
     resp = client.post(
         f"/match/{sleeper['id']}/status", data={"status": "confirmed"}, follow_redirects=False

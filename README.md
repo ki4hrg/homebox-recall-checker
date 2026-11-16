@@ -104,8 +104,8 @@ Two checks stop *other web pages* from using your browser against the UI:
   and `127.0.0.1`, for the container healthcheck) are allowed; `*` turns the check off.
 
 The UI also sends headers that stop other sites framing it (against clickjacking) and allow no
-script, refuses request bodies over 16 KB, and only turns recall links from the feeds into links
-when they are `http(s)` URLs. Errors show a short message; the detail (a Homebox error, for
+script but its own theme switch, refuses request bodies over 16 KB, and only turns recall links
+from the feeds into links when they are `http(s)` URLs. Errors show a short message; the detail (a Homebox error, for
 instance) goes to the container log, never to the page.
 
 **Upgrading from 0.2.1 or earlier:** if you open the UI by a host name (through a proxy, or a LAN
@@ -157,8 +157,8 @@ recall-checker check              # one full cycle
 recall-checker test-notify        # send a test message through Apprise
 ```
 
-The web UI also has a **Test notification** button. It shows whether delivery worked and, if it
-failed, Apprise's reason (connection refused, auth error, and so on). From the host:
+The web UI also has a **Send Test Notification** button. It shows whether delivery worked and,
+if it failed, Apprise's reason (connection refused, auth error, and so on). From the host:
 `docker exec <container> recall-checker test-notify`.
 
 ## Development

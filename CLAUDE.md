@@ -50,8 +50,13 @@ decisions: `docs/DECISIONS.md` · user docs: `README.md`.
 - **Every route goes through the middleware in `web/guards.py`** (no sign-in, by decision).
   A new route or method updates the route-guard table in `docs/ARCHITECTURE.md`; a new POST
   joins the cross-site refusal tests (the `web` fixture's `paths` in `tests/test_web.py`).
-- **No inline `<script>` or `style=`** in templates: the CSP forbids both, and
-  `tests/test_boundaries.py` checks it. Styles go in `web/static/style.css`.
+- **No inline `<script>`, `on…=` handler or `style=`** in templates: the CSP (`script-src
+  'self'`, `style-src 'self'`) forbids them, and `tests/test_boundaries.py` checks it. Styles go
+  in `web/static/style.css`, scripts in a file under `web/static/`.
+- **Colours are tokens.** `style.css` defines the standard token names (`--color-page`,
+  `--color-ink-3`…) once for light and twice, identically, for dark; rules use only those.
+  `tests/test_design.py` checks every pair for AA contrast in both themes: a new text/background
+  pair goes in its `TEXT_PAIRS`, a new colour token in `docs/DECISIONS.md` first.
 - **Settings never echo a value.** A bad variable exits 1 with one `Error: …` line naming it;
   URLs and Apprise targets can carry credentials. `HOMEBOX_TOKEN` and `APPRISE_URLS` stay
   `repr=False`, and Apprise URLs are logged only as their scheme.

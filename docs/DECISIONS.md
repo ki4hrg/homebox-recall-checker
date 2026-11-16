@@ -22,6 +22,9 @@ Every decision below is in force.
 - [UI input refused with a 400; one error page; notices are codes](#2026-11-16--ui-input-refused-with-a-400-one-error-page-notices-are-codes)
 - [Security headers, with no inline style or script](#2026-11-16--security-headers-with-no-inline-style-or-script)
 - [Feed downloads and request bodies are capped](#2026-11-16--feed-downloads-and-request-bodies-are-capped)
+- [Standard tokens as `--color-*` custom properties; tiers on the status colours](#2026-11-16--standard-tokens-as---color--custom-properties-tiers-on-the-status-colours)
+- [A theme script from this origin: `script-src 'self'`](#2026-11-16--a-theme-script-from-this-origin-script-src-self)
+- [Dismiss is not destructive, so it doesn't confirm](#2026-11-16--dismiss-is-not-destructive-so-it-doesnt-confirm)
 
 ## 2026-11-16 — Stays a public repo on the personal account
 
@@ -151,8 +154,8 @@ result straight from the POST (a reload would send another test).
 
 Every answer carries a CSP (`default-src 'none'; style-src 'self'; img-src 'self' https: http:;
 form-action 'self'; frame-ancestors 'none'; base-uri 'none'`), `X-Frame-Options: DENY`,
-`X-Content-Type-Options: nosniff` and `Referrer-Policy: same-origin`. The UI runs no script, so
-none is allowed; the five inline `style=` attributes became classes in `style.css`, and a test
+`X-Content-Type-Options: nosniff` and `Referrer-Policy: same-origin`. The UI ran no script, so
+none was allowed (until the theme script below added `script-src 'self'`); the five inline `style=` attributes became classes in `style.css`, and a test
 keeps inline style and script out of the templates. `frame-ancestors` stops a page framing the UI
 to steer a click onto Confirm or Dismiss. Images may come from any http(s) host because recall
 photos are on the agencies' hosts. Rejected: `'unsafe-inline'` for styles (five attributes were
@@ -169,3 +172,46 @@ one is 3.3 KB) are skipped. Over a cap, that source's sync fails for the run, as
 error would. The caps are constants, not settings: nobody needs to tune them, and an extra
 variable is one more thing to misconfigure. Request bodies over 16 KB are refused (the only
 bodies are one-field forms). Links from the feeds become links only when they are http(s) URLs.
+
+## 2026-11-16 — Standard tokens as `--color-*` custom properties; tiers on the status colours
+
+`style.css` defines the standards' token names (`design.md`, Tokens) as custom properties, spelled
+the way Tailwind 4 spells them (`--color-page`, `--color-ink-3`, `--radius-card`), so the names
+read the same as in apps that use Tailwind; whether an app without Tailwind may use plain
+`--page` is still open in the standards. Type and spacing take Tailwind 4's names too (`--font-sans`, `--text-sm`, `--spacing`).
+The old names map by meaning: `bg`→`page`, `fg`→`ink`, `muted`→`ink-3`, `border`→`line`,
+`ok`→`ok`. The match tiers are not statuses, but they read as urgency, so they use the status
+colours rather than app tokens: `high` is a solid `danger` badge, `medium` a solid `warn` badge,
+`low` a neutral one (`ink-2` on `sunk`). No app colour token is added.
+
+Every value was chosen to pass WCAG AA in both themes: text 4.5:1 on each surface it sits on,
+control edges (borders, focus ring) 3:1. `tests/test_design.py` checks the pairs, that both
+themes set every token and the two dark blocks agree, and that no rule uses a raw colour or
+opacity. In 0.3.0 six pairs failed in dark mode or on the badges (the primary button 2.49, the
+`medium` badge 2.69, the `low` badge 4.24, Dismiss 2.93, the success notice 3.56, the error
+notice and error count 3.25). Rejected: keeping the white-on-colour badges and darkening the dark
+theme's accent, which makes links on the dark page harder to read.
+
+## 2026-11-16 — A theme script from this origin: `script-src 'self'`
+
+The standards require a Light / Dark / System choice stored in `localStorage` and applied before
+first paint. That needs script, which the CSP refused. `static/theme.js` is loaded by a
+render-blocking `<script src>` in `<head>`, before the stylesheet; it applies the stored choice,
+then shows and wires the three buttons in the footer (there is no settings page or menu). The
+buttons are rendered `hidden`, so without the script the device's setting decides and no control
+does nothing. The CSP adds only `script-src 'self'`: no inline script or `on…=` handler runs (the
+template test refuses both), and nothing else the app answers can run as a script, because its
+HTML, JSON and plain-text answers fail the `nosniff` type check. The script reads and writes only
+the `theme` key, sends no request and touches no page data.
+
+Rejected: an inline script allowed by its hash (the hash must track every edit, and the
+template test could no longer refuse inline script outright); a nonce (per-request plumbing for
+one fixed script); a server-side choice in a cookie (the app has no cookies, and a per-device
+preference needs no request).
+
+## 2026-11-16 — Dismiss is not destructive, so it doesn't confirm
+
+`design.md` asks destructive actions to confirm inline. Dismiss removes nothing: the match stays
+in the Dismissed list, Reopen restores it, and nothing in Homebox changes. It stays a one-click
+secondary button in the danger colour. Rejected: an inline confirm, which would also need script
+for something any click can undo.

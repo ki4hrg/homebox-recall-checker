@@ -34,11 +34,11 @@ NoticeCode = Annotated[str, Query(alias="notice")]
 # What a redirect may ask a page to say. A link carries only the code, so no link can put its
 # own text on the page. "test" shows the last test notification's result, held in memory.
 NOTICES: dict[str, tuple[str, bool]] = {
-    "check-started": ("Check started. Reload in a minute to see the results.", True),
+    "check-started": ("Check started. Reload in a minute for the results.", True),
     "check-running": ("A check is already running.", True),
     "writeback-failed": (
-        "Saved, but writing the recall to Homebox failed. It is retried on the next check; "
-        "the container log has the details.",
+        "Saved, but couldn't write to Homebox. The next check retries it; the container log "
+        "has the details.",
         False,
     ),
 }

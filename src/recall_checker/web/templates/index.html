@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block header_extra %}
-<div>
+<div class="header-actions">
   {% if last_run %}
     <span class="muted">Last check {{ last_run.started_at[:16].replace("T", " ") }} UTC ·
       {{ last_run.items_total }} items · {{ last_run.recalls_total }} recalls
-      {% if last_run.errors %} · <strong class="error-count">{{ last_run.errors|length }} error(s)</strong>{% endif %}
+      {%- if last_run.errors %} · <strong class="error-count">{{ last_run.errors|length }} {{ "error" if last_run.errors|length == 1 else "errors" }}</strong>{% endif %}
     </span>
   {% endif %}
   <form class="inline" method="post" action="/test-notify">
-    <button title="{{ 'Send a test message through Apprise' if notifier_configured else 'No APPRISE_URLS configured' }}">Test notification</button>
+    <button{% if not notifier_configured %} title="APPRISE_URLS isn't set"{% endif %}>Send Test Notification</button>
   </form>
   <form class="inline" method="post" action="/run">
-    <button class="primary" {% if running %}disabled{% endif %}>{{ "Checking…" if running else "Run check now" }}</button>
+    <button class="primary" {% if running %}disabled{% endif %}>{{ "Checking…" if running else "Run Check" }}</button>
   </form>
 </div>
 {% endblock %}
@@ -19,21 +19,21 @@
 <nav class="filters">
   {% for s in ["new", "confirmed", "dismissed", "all"] %}
     <a href="?status={{ s }}&tier={{ tier }}" class="{{ 'on' if status == s }}">{{ s|capitalize }}
-      {% if s != "all" %}({{ counts.get(s, 0) }}){% endif %}</a>
+      {%- if s != "all" %}&nbsp;({{ counts.get(s, 0) }}){% endif %}</a>
   {% endfor %}
   <span class="spacer"></span>
   {% for t in ["", "medium", "high"] %}
-    <a href="?status={{ status }}&tier={{ t }}" class="{{ 'on' if tier == t }}">{{ "Any confidence" if not t else t|capitalize ~ "+" }}</a>
+    <a href="?status={{ status }}&tier={{ t }}" class="{{ 'on' if tier == t }}">{{ "Any Confidence" if not t else t|capitalize ~ "+" }}</a>
   {% endfor %}
 </nav>
 
 {% for m in matches %}
-  <div class="card">
+  <div class="card row">
     <h3>
-      <span class="badge {{ m.tier.name }}">{{ m.tier.name }}</span>
+      <span class="badge {{ m.tier.name }}">{{ m.tier.name|capitalize }}</span>
       <a href="/match/{{ m.id }}">{{ m.item.name }}</a>
       {% if m.item.manufacturer or m.item.modelNumber %}<span class="muted">· {{ m.item.manufacturer }} {{ m.item.modelNumber }}</span>{% endif %}
-      {% if m.status != "new" %}<span class="badge status">{{ m.status }}</span>{% endif %}
+      {% if m.status != "new" %}<span class="badge status">{{ m.status|capitalize }}</span>{% endif %}
     </h3>
     {% if m.recall %}
       <div>{{ m.recall.title }} <span class="muted">({{ m.recall.source|upper }}, {{ m.recall.recall_date }})</span></div>
@@ -43,6 +43,6 @@
     </ul>
   </div>
 {% else %}
-  <div class="empty">No matches here.{% if not last_run %} Run a check to get started.{% endif %}</div>
+  <div class="empty">{{ "No matches" if last_run else "No checks run yet" }}</div>
 {% endfor %}
 {% endblock %}
