@@ -19,7 +19,7 @@ nothing.
      `pull_policy: always`, and the host's updater (Dockhand's auto-update or "Check for
      updates", Diun, or a manual `docker compose pull && docker compose up -d`) recreates it.
      The maintainer's host runs Dockhand's auto-update, on arm64.
-   - **Pinned:** `RECALL_CHECKER_IMAGE=ghcr.io/ki4hrg/homebox-recall-checker:0.3.0` (or `:0.3`
+   - **Pinned:** `RECALL_CHECKER_IMAGE=ghcr.io/ki4hrg/homebox-recall-checker:X.Y.Z` (or `:X.Y`
      for patch releases only), bumped by hand for each release.
 
 The GHCR package is public, so hosts pull without credentials.

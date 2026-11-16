@@ -16,13 +16,98 @@ recall feeds, the notification services or the deploy host.
 | Phase | Status | PR | Merge |
 |---|---|---|---|
 | 0 Audit | done (this file) | | |
-| Hotfix: cross-site writes and unknown hosts (Q1, Q2) | done, released 0.2.2 | #1 | `5e8f677` |
+| Hotfix: cross-site writes and unknown hosts (Q1, Q2) | done, released 0.2.2 | #1 | `5e8f677`, by hand |
 | 1 Pipeline (+ uv, ruff format, Dependabot) | done | #2 | `24a8bca` (merge commit, by hand, Q6) |
-| 2 Runtime (health, revision, config) | done, released 0.3.0 (#4, `dad4531`) | #3 | `cc71431` |
-| 3 Boundaries (UI input, errors) | done; release 0.3.1 to follow (Q8) | #5 | `e6015b4` |
-| 4 Agent docs | done | #7 | `2eccf11` |
-| 5 Design/copy | in review (`automerge`); ships in 0.3.1 with Phase 3 | `fix/ui-design` | |
-| 6 Stack | out (Q12) | | |
+| 2 Runtime (health, revision, config) | done, released 0.3.0 (#4, `dad4531`) | #3 | `cc71431`, by hand |
+| 3 Boundaries (UI input, errors) | done, released 0.3.1 (#10, `7c31bd2`) | #5 | `e6015b4`, `automerge` |
+| 4 Agent docs | done, in 0.3.1 | #7 | `2eccf11`, `automerge` |
+| 5 Design/copy | done, released 0.3.1 (#10, `7c31bd2`) | #9 | `04ff226`, `automerge` |
+| 6 Stack | out (Q12), except uv and Python 3.13 (Phase 1) | | |
+
+## Close-out (2026-11-16)
+
+The sweep is finished; this plan is final. `main` is at `7c31bd2` (#10, release 0.3.1), which is
+what John's instance runs.
+
+**What landed**
+- **Hotfix (#1, `5e8f677`, released 0.2.2):** `CrossSiteGuard` refuses any write that isn't
+  same-origin (`Sec-Fetch-Site`, `Origin` against `Host` or `PUBLIC_URL`); `HostGuard` answers
+  only to allowed `Host` names (`ALLOWED_HOSTS`), against DNS rebinding; the compose example binds
+  the port to `127.0.0.1`; the README's "Access and security"; refusal tests. This plan was
+  committed with it.
+- **Standards change (Q3):** the standards' `image.yml` gained compatible `release-tags` and
+  `multi-arch` inputs, and the Python template a `release.yml`. A sandbox pre-release exercised
+  both before `v1` moved to them.
+- **Phase 1 (#2, `24a8bca`, merge commit):** uv with `uv.lock` and `[dependency-groups]`,
+  Python 3.13 (`.python-version`, `python:3.13-slim`); `ci.yml` and `release.yml` calling the
+  standards' workflows at `@v1`, with no `deploy` job (mode B); the `ruff format` commit
+  `55691ea`, named in `.git-blame-ignore-revs`; Dependabot (monthly, grouped); the PR template,
+  the MIT `LICENSE`, `docs/claude-candidates.md` and `docs/DECISIONS.md` with the exceptions.
+  `scripts/repo-settings.sh` was applied after the merge: squash only, branches deleted on merge,
+  the `automerge` and `agent-found` labels, Dependabot alerts and security updates, secret
+  scanning and push protection. GitGuardian's check runs on PRs.
+- **Phase 2 (#3, `cc71431`, by hand; released 0.3.0 by #4):** `GET /api/health` with
+  `{ ok, revision, version }`, `GIT_REVISION` in the image and the image's healthcheck on it; boot
+  validation in `Settings`, one `Error:` line per problem and no values printed; the compose guard
+  on `HOMEBOX_RECALL_TOKEN`; `docs/DEPLOYMENT.md`. `/healthz` stays as a deprecated alias (Q9, as
+  updated).
+- **Phase 3 (#5, `e6015b4`, `automerge`):** every UI query, path and form value parsed, with a
+  400 for anything else; one set of error handlers (fixed messages, details logged); notices as
+  codes, and the test-notification result kept out of the URL; links from the feeds only when
+  they are http(s); security headers (CSP, `X-Frame-Options: DENY`, `nosniff`,
+  `Referrer-Policy`); caps on request bodies and feed downloads; the route-guard table in
+  `docs/ARCHITECTURE.md`. Follow-ups from its security pass are issue #6.
+- **Phase 4 (#7, `2eccf11`, `automerge`, docs only):** CLAUDE.md, the rest of
+  `docs/ARCHITECTURE.md` (from the README's "How it works"), `AGENTS.md` and
+  `.claude/settings.json`. The matcher bug found while documenting matching is issue #8.
+- **Phase 5 (#9, `04ff226`, `automerge`):** the standard token names as `--color-*` custom
+  properties, AA contrast in both themes with `tests/test_design.py`, the Light / Dark / System
+  toggle from `static/theme.js` (CSP `script-src 'self'`), and the copy and casing pass.
+
+**How each release was verified**
+- **0.2.2** (`5e8f677`): on John's instance, a cross-site `POST` answered 403.
+- **0.3.0** (`dad4531`): the first `release.yml` run built amd64 and arm64 natively and pushed
+  one manifest list as `:0.3.0`, `:0.3` and `:latest`, with revision `dad4531`. Before the
+  instance upgraded, its environment was checked against the new validation rules, so the boot
+  check wouldn't refuse it.
+- **0.3.1** (`7c31bd2`): `/api/health` on the instance reports `7c31bd2` and `0.3.1`; answers
+  carry the CSP and `X-Frame-Options: DENY`; a cross-site `POST` answers 403; `?tier=` with an
+  unknown value answers 400.
+
+**John's decisions along the way** (Q1–Q13 above; each exception is in `docs/DECISIONS.md`):
+- No sign-in in the app; the CSRF and `Host` checks shipped first, as the 0.2.2 hotfix (Q1, Q2).
+- Extend the standards' `image.yml` for mode B rather than keep a local publish job (Q3).
+- Multi-arch release images, with `:main` amd64 only (Q4, Q3).
+- Python 3.13 (Q5); the formatting commit with a merge commit for #2 (Q6); the `LICENSE` (Q7);
+  releases after Phases 2 and 3 (Q8); Dependabot monthly (Q10); test data left as is (Q11);
+  Phases 1–5 (Q12); the full Phase 5 pass (Q13).
+- `/healthz` kept through 0.3.x as a deprecated alias, not removed in 0.3.0 (Q9, updated in
+  Phase 2).
+
+**Exceptions** (recorded in `docs/DECISIONS.md`): stays a public repo on the personal account;
+deploy mode B with no webhook, the revision checked by hand after a release; multi-arch release
+images; `compose.example.yml` is a user snippet, not a deployed stack; no sign-in in the web UI;
+`/api/health` also reports `version`; Dependabot monthly though the repo is public; Dismiss
+doesn't confirm.
+
+**Standards gaps.** Gaps 1 and 2 (mode B in `image.yml` and the Python template) are fixed in
+`v1`, and so is merge-on-green leaving the merged branch behind, found during the sweep. Still
+open, as questions in the standards' `open-questions.md`:
+- A single-user tool with no sign-in (gap 3).
+- Public repos staying on the personal account (gap 4).
+- The Python template's agent-doc files (`.claude/settings.json`, `AGENTS.md`, a CLAUDE.md
+  skeleton), under its template-completeness question.
+- How a public tool splits its README and `docs/ARCHITECTURE.md`.
+
+**John's open items**
+- Issue #6 (`agent-found`): Phase 3 follow-ups (`/healthz` error detail, markdown escaping in
+  notifications, a cap on Homebox responses, a `/run` cooldown).
+- Issue #8 (`agent-found`): the matcher skips name-word candidates when Manufacturer is a
+  placeholder.
+- Remove the deprecated `/healthz` alias in a later release (which also settles #6's first item).
+
+No branch is left over: `main` is the only branch, local and on GitHub, and there's no
+`docs/HANDOFF.md` to delete.
 
 ## The audit
 
