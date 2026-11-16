@@ -98,7 +98,9 @@ same lines again until the variable is fixed; `docker logs <container>` shows th
   publishes `127.0.0.1:8080:8080`, for a reverse proxy on the same host with its own auth; a
   proxy on the same Docker network needs no published port.
 - Outbound: Homebox over the stack network, CPSC (`saferproducts.gov`) and NHTSA
-  (`static.nhtsa.gov`) over HTTPS, and whatever the Apprise URLs name.
+  (`static.nhtsa.gov`) over HTTPS, and whatever the Apprise URLs name. Feed downloads are capped
+  (`docs/ARCHITECTURE.md`): the NHTSA zip passes through a temporary file of up to 128 MB in the
+  container's `/tmp`, and a check peaks at about 190 MB of memory.
 
 ## Backups
 

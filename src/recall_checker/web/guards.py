@@ -137,3 +137,85 @@ class CrossSiteGuard:
             await response(scope, receive, send)
             return
         await self.app(scope, receive, send)
+
+
+# The UI loads only its own stylesheet and recall images from the feeds' hosts, runs no script,
+# and is never framed: a page that frames it can't trick a click onto Confirm or Dismiss.
+CONTENT_SECURITY_POLICY = "; ".join(
+    [
+        "default-src 'none'",
+        "style-src 'self'",
+        "img-src 'self' https: http:",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'none'",
+    ]
+)
+SECURITY_HEADERS = [
+    (b"content-security-policy", CONTENT_SECURITY_POLICY.encode()),
+    (b"x-frame-options", b"DENY"),
+    (b"x-content-type-options", b"nosniff"),
+    # Links out (Homebox, the recall pages) don't carry the match page's address.
+    (b"referrer-policy", b"same-origin"),
+]
+
+
+class SecurityHeaders:
+    """Add the headers above to every response, refusals and static files included."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_headers(message) -> None:
+            if message["type"] == "http.response.start":
+                names = {k.lower() for k, _ in message.get("headers", [])}
+                extra = [(k, v) for k, v in SECURITY_HEADERS if k not in names]
+                message = {**message, "headers": [*message.get("headers", []), *extra]}
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+
+# The only request bodies are one-field forms. Anyone who reaches the port could otherwise send a
+# body as large as they like, and the form parser would hold it in memory.
+MAX_BODY_BYTES = 16 * 1024
+
+
+class BodyTooLarge(Exception):
+    pass
+
+
+class BodyLimit:
+    """Refuse a request body over ``MAX_BODY_BYTES``: 413 when ``Content-Length`` says so,
+    and an error partway through reading when it's absent or wrong."""
+
+    def __init__(self, app: ASGIApp, limit: int = MAX_BODY_BYTES) -> None:
+        self.app = app
+        self.limit = limit
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        declared = Headers(scope=scope).get("content-length", "")
+        if declared.isdigit() and int(declared) > self.limit:
+            response = PlainTextResponse("Request body too large.", 413)
+            await response(scope, receive, send)
+            return
+        seen = 0
+
+        async def counted() -> dict:
+            nonlocal seen
+            message = await receive()
+            if message["type"] == "http.request":
+                seen += len(message.get("body", b""))
+                if seen > self.limit:
+                    raise BodyTooLarge
+            return message
+
+        await self.app(scope, counted, send)

@@ -4,7 +4,7 @@
   {% if last_run %}
     <span class="muted">Last check {{ last_run.started_at[:16].replace("T", " ") }} UTC ·
       {{ last_run.items_total }} items · {{ last_run.recalls_total }} recalls
-      {% if last_run.errors %} · <strong style="color:var(--high)">{{ last_run.errors|length }} error(s)</strong>{% endif %}
+      {% if last_run.errors %} · <strong class="error-count">{{ last_run.errors|length }} error(s)</strong>{% endif %}
     </span>
   {% endif %}
   <form class="inline" method="post" action="/test-notify">
@@ -16,15 +16,12 @@
 </div>
 {% endblock %}
 {% block content %}
-{% if notice %}
-  <div class="notice {{ 'ok' if notice_ok else 'err' }}" role="status">{{ notice }}</div>
-{% endif %}
 <nav class="filters">
   {% for s in ["new", "confirmed", "dismissed", "all"] %}
     <a href="?status={{ s }}&tier={{ tier }}" class="{{ 'on' if status == s }}">{{ s|capitalize }}
       {% if s != "all" %}({{ counts.get(s, 0) }}){% endif %}</a>
   {% endfor %}
-  <span style="flex:1"></span>
+  <span class="spacer"></span>
   {% for t in ["", "medium", "high"] %}
     <a href="?status={{ status }}&tier={{ t }}" class="{{ 'on' if tier == t }}">{{ "Any confidence" if not t else t|capitalize ~ "+" }}</a>
   {% endfor %}

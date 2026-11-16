@@ -3,8 +3,50 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Protocol
+from urllib.parse import urlsplit
+
+import httpx
 
 _DATE_FIELDS = ("recall_date", "last_publish_date", "manufactured_from", "manufactured_to")
+
+
+def http_url(value: str) -> str:
+    """``value`` if it is an absolute http(s) URL with a host, else "".
+
+    Recall links come from the feeds and become ``href``/``src`` in the UI and links in
+    notifications and Homebox. Anything else (``javascript:``, ``data:``, a relative path) is
+    dropped, so a feed can't put script behind a link.
+    """
+    value = (value or "").strip()
+    try:
+        parts = urlsplit(value)
+    except ValueError:
+        return ""
+    if parts.scheme.lower() not in ("http", "https") or not parts.hostname:
+        return ""
+    return value
+
+
+class FeedTooLarge(RuntimeError):
+    """A feed answered with more than the source's size cap."""
+
+
+def read_limited(resp: httpx.Response, limit: int, write) -> int:
+    """Stream ``resp``'s body into ``write`` and return its size; refuse more than ``limit``.
+
+    Checks ``Content-Length`` first, then counts what arrives, since the header can be absent
+    or wrong. Keeps a huge or hostile answer from filling memory or disk on a small host.
+    """
+    declared = resp.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > limit:
+        raise FeedTooLarge(f"{resp.url.host} answered {declared} bytes, over the {limit} cap")
+    size = 0
+    for chunk in resp.iter_bytes():
+        size += len(chunk)
+        if size > limit:
+            raise FeedTooLarge(f"{resp.url.host} answered over the {limit}-byte cap")
+        write(chunk)
+    return size
 
 
 @dataclass
@@ -40,6 +82,15 @@ class Recall:
     @property
     def label(self) -> str:
         return f"{self.source.upper()} Recall #{self.number}"
+
+    @property
+    def link(self) -> str:
+        """The recall's page, or "" if the feed gave something other than an http(s) URL."""
+        return http_url(self.url)
+
+    @property
+    def image_links(self) -> list[str]:
+        return [u for u in map(http_url, self.images) if u]
 
     def to_dict(self) -> dict:
         d = asdict(self)

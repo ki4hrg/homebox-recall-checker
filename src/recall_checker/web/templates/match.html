@@ -2,7 +2,7 @@
 {% block title %}{{ m.item.name }} — Recall Checker{% endblock %}
 {% block content %}
 <p><a href="/">← All matches</a></p>
-<h2 style="margin-top:0">
+<h2 class="flush-top">
   <span class="badge {{ m.tier.name }}">{{ m.tier.name }}</span>
   {{ m.item.name }}
   <span class="badge status">{{ m.status }}</span>
@@ -15,7 +15,7 @@
       <li>{{ e.detail }}{% if e.snippet %}<span class="snippet">“{{ e.snippet }}”</span>{% endif %}</li>
     {% endfor %}
   </ul>
-  <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:.5rem">
+  <div class="actions">
     {% if m.status != "confirmed" %}
     <form class="inline" method="post" action="/match/{{ m.id }}/status">
       <input type="hidden" name="status" value="confirmed">
@@ -35,7 +35,7 @@
     </form>
     {% endif %}
   </div>
-  <p class="muted" style="margin-bottom:0">
+  <p class="muted flush-bottom">
     Found {{ m.created_at[:10] }}
     {% if m.notified_at %} · notified {{ m.notified_at[:10] }}{% endif %}
     {% if m.writeback_at %} · written to Homebox {{ m.writeback_at[:10] }}{% endif %}
@@ -58,7 +58,8 @@
   {% set r = m.recall %}
   {% if r %}
   <div class="card">
-    <h3><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.label }}</a></h3>
+    {# Only http(s) links from the feeds become links (Recall.link); anything else is text. #}
+    <h3>{% if r.link %}<a href="{{ r.link }}" target="_blank" rel="noopener">{{ r.label }}</a>{% else %}{{ r.label }}{% endif %}</h3>
     <dl>
       <dt>Title</dt><dd>{{ r.title }}</dd>
       <dt>Date</dt><dd>{{ r.recall_date }}</dd>
@@ -72,7 +73,8 @@
       {% if r.consumer_contact %}<dt>Contact</dt><dd>{{ r.consumer_contact }}</dd>{% endif %}
       {% if r.upcs %}<dt>UPCs</dt><dd>{{ r.upcs|join(", ") }}</dd>{% endif %}
     </dl>
-    {% if r.images %}<p><img class="recall" src="{{ r.images[0] }}" alt="Recalled product" loading="lazy"></p>{% endif %}
+    {% set images = r.image_links %}
+    {% if images %}<p><img class="recall" src="{{ images[0] }}" alt="Recalled product" loading="lazy"></p>{% endif %}
     <details><summary>Full description</summary><p>{{ r.description }}</p></details>
   </div>
   {% endif %}

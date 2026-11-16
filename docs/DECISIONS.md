@@ -106,3 +106,48 @@ line prints a value: a URL can carry credentials. The token and `APPRISE_URLS` a
 the settings' `repr`. `restart: unless-stopped` still restarts a refused container; the compose
 guard on `HOMEBOX_RECALL_TOKEN` stops the commonest case before it starts. Rejected: `SecretStr`
 for the token (every call site changes for what `repr=False` already gives).
+
+## 2026-11-16 — UI input refused with a 400; one error page; notices are codes
+
+Every query, path and form value the UI takes is checked against the values it can be: `status`,
+`tier`, `notice`, the match id (a positive 64-bit integer, so SQLite never sees a larger one) and
+the form's `status`. Anything else answers 400 with a short message, where `?tier=bogus` was a
+500 before. Unknown values are refused rather than ignored, so a typo in a bookmark says so
+instead of showing a different list.
+
+The exception handlers in `create_app` are the one place errors are shown: `AppError` with its
+fixed message, parameter failures naming the parameter (never its value), routing errors with
+fixed text, and anything else logged and shown as a generic 500. Pages get an HTML page,
+`/api/*` gets `{ "error": … }`. A failed write-back to Homebox was a 502 JSON page carrying part
+of Homebox's answer; it now keeps the status change, logs the detail and redirects to the match
+with a fixed notice, since the next check retries it.
+
+`?notice=` took any text and showed it (escaped) on the index page, so any link could put its own
+words there, and the test-notification result travelled in the URL and the browser's history. A
+notice is now a code mapped to fixed text (`NOTICES`); the test result is held in the process's
+memory and `?notice=test` shows the last one. It is lost on restart, which only means no notice.
+Rejected: a cookie flash (the app has no cookies and no reason to start), and rendering the
+result straight from the POST (a reload would send another test).
+
+## 2026-11-16 — Security headers, with no inline style or script
+
+Every answer carries a CSP (`default-src 'none'; style-src 'self'; img-src 'self' https: http:;
+form-action 'self'; frame-ancestors 'none'; base-uri 'none'`), `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff` and `Referrer-Policy: same-origin`. The UI runs no script, so
+none is allowed; the five inline `style=` attributes became classes in `style.css`, and a test
+keeps inline style and script out of the templates. `frame-ancestors` stops a page framing the UI
+to steer a click onto Confirm or Dismiss. Images may come from any http(s) host because recall
+photos are on the agencies' hosts. Rejected: `'unsafe-inline'` for styles (five attributes were
+cheaper to move).
+
+## 2026-11-16 — Feed downloads and request bodies are capped
+
+It runs on small home servers (1 GB of memory is common). CPSC's answer is held in memory to parse
+(28 MB for the full set in November 2026, several times that once parsed) and is capped at
+64 MB. The NHTSA zip (15 MB) goes to
+a temporary file, capped at 128 MB; its text (314 MB) is read a row at a time, refused when its
+declared size is over 1 GB (zipfile never reads past it), and rows over 64 KB (the longest real
+one is 3.3 KB) are skipped. Over a cap, that source's sync fails for the run, as a download
+error would. The caps are constants, not settings: nobody needs to tune them, and an extra
+variable is one more thing to misconfigure. Request bodies over 16 KB are refused (the only
+bodies are one-field forms). Links from the feeds become links only when they are http(s) URLs.
