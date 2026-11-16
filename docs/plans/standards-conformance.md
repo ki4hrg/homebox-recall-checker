@@ -16,8 +16,8 @@ recall feeds, the notification services or the deploy host.
 | Phase | Status | PR | Merge |
 |---|---|---|---|
 | 0 Audit | done (this file) | | |
-| Hotfix: cross-site writes and unknown hosts (Q1, Q2) | in review, release 0.2.2 | `fix/cross-site-writes-and-hosts` | |
-| 1 Pipeline (+ uv, ruff format, Dependabot) | | | |
+| Hotfix: cross-site writes and unknown hosts (Q1, Q2) | done, released 0.2.2 | #1 | `5e8f677` |
+| 1 Pipeline (+ uv, ruff format, Dependabot) | in review | `ci/standard-pipeline` | merge commit, by hand (Q6) |
 | 2 Runtime (health, revision, config) | | | |
 | 3 Boundaries (UI input, errors) | | | |
 | 4 Agent docs | | | |
@@ -365,9 +365,12 @@ missing files are already open in the standards' `open-questions.md`.
   proxy's auth, plus the CSRF and `Host` checks and the compose port binding. Moved out of
   Phase 3 into the hotfix.
 - **Q2:** ship the CSRF/`Host` fix first, as a hotfix PR before Phase 1, released as 0.2.2.
-- **Q3:** pending. Checked as asked: `image.yml@v1` can't do mode B releases. It tags only
-  `:<branch>` and `:sha-…` (no semver tags, no `:latest`) and builds no multi-arch manifest. The
-  decision between (a) and (b) is still John's, and it blocks Phase 1.
+- **Q3:** (a). The standards' `image.yml` got compatible `release-tags` and `multi-arch` inputs
+  and `v1` moved to them (standards `68401ea`, recorded in its `decisions.md` 2026-11-16); the
+  Python template gained `release.yml`, which checks the tag against `pyproject.toml` and calls
+  `image.yml` with both. That closes standards gaps 1 and 2. Phase 1 uses the template's
+  `release.yml`; release tags stay `:X.Y.Z`, `:X.Y` and `:latest`, now amd64 and arm64 each
+  built natively, and `:main` becomes amd64 only.
 - **Q4–Q8, Q10–Q13:** accepted as recommended (multi-arch kept; Python 3.13; `ruff format` commit
   in `.git-blame-ignore-revs`, PR 1 merged with a merge commit; MIT `LICENSE`; releases after
   Phases 2 and 3; Dependabot monthly; test data left as is; Phases 1–5; the full Phase 5 pass).

@@ -1,9 +1,14 @@
-.venv
+# The image copies only pyproject.toml, uv.lock, .python-version, README.md and src/.
+# Keep the rest out of the build context, above all a local .env with real secrets.
 .git
 .github
+.claude
+.venv
 .pytest_cache
 .ruff_cache
 **/__pycache__
 data
+docs
 tests
 .env
+.env.*

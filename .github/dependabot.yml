@@ -1,0 +1,72 @@
+version: 2
+# Monthly (John's choice for this repo, though a public repo may go weekly): each
+# Dependabot PR is merged by hand. Security updates don't wait for the schedule: they open
+# when an advisory lands, grouped into one PR per ecosystem (the `security` groups, listed
+# first so a dependency joins them before any other group).
+updates:
+  # Reads pyproject.toml and uv.lock.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    # PR title becomes "chore(deps): …", which merge-on-green's title check accepts.
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Upper-bounded in pyproject.toml because their APIs have changed before (Apprise 2,
+      # Starlette 1 under FastAPI): a major is planned work, not a routine bump.
+      - dependency-name: apprise
+        update-types: [version-update:semver-major]
+      - dependency-name: fastapi
+        update-types: [version-update:semver-major]
+      - dependency-name: httpx
+        update-types: [version-update:semver-major]
+      # APScheduler 4 is a rewrite of its API (pyproject.toml keeps it below 4).
+      - dependency-name: apscheduler
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # The Python version (3.13, also in .python-version and pyproject.toml) is a stack
+      # decision: 3.13 -> 3.14 is a "minor" to Dependabot, so both are ignored here.
+      - dependency-name: python
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+      include: scope
+    # Action updates are low-risk and arrive together, majors included: one PR for all.
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      actions:
+        update-types: [major, minor, patch]
+    ignore:
+      # The standards' reusable workflows: a new major (v2) is breaking by definition and
+      # is adopted as planned work, never inside a routine grouped PR.
+      - dependency-name: "ki4hrg/standards*"
+        update-types: [version-update:semver-major]
