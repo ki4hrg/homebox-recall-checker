@@ -91,6 +91,12 @@ def cmd_serve(s: Settings) -> int:
         sched.add_job(runner.run, id="startup-check")
     log.info("Scheduled checks: %s", s.check_cron or f"every {s.check_interval_hours}h")
     log.debug("Next scheduled run: %s", job.next_run_time)
+    names, any_ip = s.host_rule()
+    if names is None:
+        log.warning("ALLOWED_HOSTS=*: the Host check is off, so DNS rebinding can read the UI")
+    else:
+        shown = ", ".join([*names, "localhost"] + (["any IP address"] if any_ip else []))
+        log.info("Web UI answers to: %s (ALLOWED_HOSTS)", shown)
 
     uvicorn.run(create_app(runner), host=s.ui_host, port=s.ui_port,
                 log_level=s.log_level.lower(), access_log=False)

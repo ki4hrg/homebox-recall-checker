@@ -36,7 +36,9 @@ Requires **Homebox 0.26+**, which has the `/v1/entities` API.
 
 1. In Homebox, go to **Profile → API Keys** and create a key. It starts with `hb_`.
 2. Add the service from [`compose.example.yml`](compose.example.yml) to your Homebox stack.
-3. Open the UI on port 8080. The first check runs at startup.
+3. Put it behind your reverse proxy (with the proxy's auth), set `PUBLIC_URL` to the address you
+   open it at, and open the UI. The first check runs at startup. See
+   [Access and security](#access-and-security) before exposing the port any other way.
 
 ### Images, releases and updates
 
@@ -60,7 +62,38 @@ CI fails the release build if the tag doesn't match the `pyproject.toml` version
 creates the GHCR package as **private**, so either make it public or give the deploy host registry
 credentials.
 
-> The web UI has no authentication. Keep it on your LAN or behind your reverse proxy's auth.
+## Access and security
+
+**The web UI has no sign-in, by design.** Anyone who can reach it can see matched items (serial
+numbers, locations, purchase dates), confirm a match (which writes a tag and a maintenance entry to
+Homebox), dismiss one (which silences that alert for good), start a check and send a test
+notification. Run it only:
+
+- behind a reverse proxy that requires sign-in (forward auth, basic auth, an SSO gateway), or
+- on a network where everyone who can reach it may do those things.
+
+The compose example binds the port to `127.0.0.1`, for a proxy on the same host. Never publish it
+to the internet without the proxy's auth in front.
+
+Two checks stop *other web pages* from using your browser against the UI:
+
+- **Cross-site writes are refused.** Every request that changes something (confirm, dismiss,
+  reopen, run a check, test notification) must come from the UI's own pages: a browser request
+  whose `Sec-Fetch-Site` isn't `same-origin`, or whose `Origin` isn't this UI, gets a 403.
+  `Origin` is compared with the `Host` header the request arrived with, or with `PUBLIC_URL`.
+  Clients that send neither header (curl, scripts) are allowed, so the network or proxy is still
+  what decides who may use it.
+- **Unknown host names are refused** (400), which stops DNS rebinding: a page that points its own
+  name at the UI's address still sends its own name. `ALLOWED_HOSTS` lists the names the UI
+  answers to. Unset, it allows the host name in `PUBLIC_URL`, any IP address (rebinding needs a
+  name, so an address is safe) and `localhost`. Set it, and only those names (plus `localhost`
+  and `127.0.0.1`, for the container healthcheck) are allowed; `*` turns the check off.
+
+**Upgrading from 0.2.1 or earlier:** if you open the UI by a host name (through a proxy, or a LAN
+name such as `myserver.lan:8080`), set `PUBLIC_URL` to that address or add the name to
+`ALLOWED_HOSTS`, or the UI answers "Unknown host" (400). Opening it by IP address keeps working.
+If your proxy rewrites the `Host` header, set `PUBLIC_URL` to the address your browser uses, or
+confirm/dismiss will answer 403.
 
 ## Configuration
 
@@ -69,7 +102,8 @@ credentials.
 | `HOMEBOX_URL` | `http://homebox:7745` | API base, as reached from the container |
 | `HOMEBOX_TOKEN` | *(required)* | Homebox API key |
 | `HOMEBOX_PUBLIC_URL` | `HOMEBOX_URL` | Browser-facing Homebox URL, used for links |
-| `PUBLIC_URL` | | Browser-facing URL of this UI, used for "Review match" links |
+| `PUBLIC_URL` | | Browser-facing URL of this UI, used for "Review match" links; its host is allowed and its origin may send writes |
+| `ALLOWED_HOSTS` | `PUBLIC_URL`'s host, any IP, `localhost` | Comma-separated host names the UI answers to; `*` turns the check off ([Access and security](#access-and-security)) |
 | `APPRISE_URLS` | | Space- or comma-separated Apprise URLs |
 | `APPRISE_CONFIG` | | Path to an Apprise config file (YAML/text) |
 | `CHECK_INTERVAL_HOURS` | `24` | |

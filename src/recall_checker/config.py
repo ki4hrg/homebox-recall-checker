@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import ipaddress
 from enum import IntEnum
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def is_ip(value: str) -> bool:
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return True
 
 
 class Tier(IntEnum):
@@ -52,6 +62,9 @@ class Settings(BaseSettings):
     ui_port: int = 8080
     # Browser-facing URL of this app, used for links in notifications.
     public_url: str = ""
+    # Comma-separated host names the UI answers to (no scheme or port); "*" turns the check off.
+    # Unset: PUBLIC_URL's host name, any IP address, and localhost.
+    allowed_hosts: str = ""
     log_level: str = "INFO"
 
     # Comma-separated: cpsc, nhtsa
@@ -65,6 +78,26 @@ class Settings(BaseSettings):
     @classmethod
     def _tier(cls, v):
         return Tier.parse(v)
+
+    @field_validator("allowed_hosts")
+    @classmethod
+    def _hosts(cls, v: str) -> str:
+        for name in (n.strip() for n in v.split(",")):
+            if name in ("", "*") or is_ip(name.strip("[]")):
+                continue
+            if any(c in name for c in "/:@ "):
+                raise ValueError(f"ALLOWED_HOSTS entries are host names only, not {name!r}")
+        return v
+
+    def host_rule(self) -> tuple[list[str] | None, bool]:
+        """(allowed host names or None for any, whether any IP-literal Host is allowed)."""
+        names = [n.strip().strip("[]").lower() for n in self.allowed_hosts.split(",") if n.strip()]
+        if "*" in names:
+            return None, True
+        if names:
+            return names, False
+        public = (urlsplit(self.public_url).hostname or "") if self.public_url else ""
+        return ([public] if public else []), True
 
     @property
     def db_path(self) -> Path:
