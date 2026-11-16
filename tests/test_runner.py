@@ -33,10 +33,20 @@ class FakeNotifier:
 
 
 def entity(id, name, manufacturer="", model="", updated="2026-01-01T00:00:00Z", **kw):
-    return {"id": id, "name": name, "manufacturer": manufacturer, "modelNumber": model,
-            "updatedAt": updated, "tags": [], "fields": [], "archived": False,
-            "soldDate": "0001-01-01T00:00:00Z", "purchaseDate": "0001-01-01T00:00:00Z",
-            "entityType": {"isLocation": False}, **kw}
+    return {
+        "id": id,
+        "name": name,
+        "manufacturer": manufacturer,
+        "modelNumber": model,
+        "updatedAt": updated,
+        "tags": [],
+        "fields": [],
+        "archived": False,
+        "soldDate": "0001-01-01T00:00:00Z",
+        "purchaseDate": "0001-01-01T00:00:00Z",
+        "entityType": {"isLocation": False},
+        **kw,
+    }
 
 
 class FakeHomebox:
@@ -54,15 +64,17 @@ class FakeHomebox:
         r.get(f"{HB}/api/v1/tags").mock(side_effect=lambda req: httpx.Response(200, json=self.tags))
         r.post(f"{HB}/api/v1/tags").mock(side_effect=self._create_tag)
         r.route(url__regex=rf"{HB}/api/v1/entities/(?P<id>[^/]+)/maintenance$").mock(
-            side_effect=self._maint)
+            side_effect=self._maint
+        )
 
     def _list(self, request):
         page = int(request.url.params.get("page", 1))
         size = int(request.url.params.get("pageSize", 100))
         items = list(self.entities.values())
-        chunk = items[(page - 1) * size: page * size]
-        return httpx.Response(200, json={"items": chunk, "page": page, "pageSize": size,
-                                         "total": len(items)})
+        chunk = items[(page - 1) * size : page * size]
+        return httpx.Response(
+            200, json={"items": chunk, "page": page, "pageSize": size, "total": len(items)}
+        )
 
     def _get(self, request, id):
         self.detail_calls += 1
@@ -90,19 +102,29 @@ class FakeHomebox:
 def env(raw_recalls, tmp_path):
     with respx.mock(assert_all_called=False) as router:
         router.get(CPSC).mock(return_value=httpx.Response(200, json=raw_recalls))
-        hb = FakeHomebox(router, [
-            entity("i1", "Laminator", "3M", "TL1302Z"),
-            entity("i2", "Rock n Play Sleeper", "Fisher-Price"),
-            entity("i3", "Router", "Netgear", "R7000"),
-            entity("i4", "Old laminator", "3M", "TL1302Z", archived=True),
-            entity("loc", "Garage", entityType={"isLocation": True}),
-        ])
-        settings = Settings(homebox_url=HB, homebox_token="hb_x", cpsc_base_url=CPSC,
-                            data_dir=tmp_path, public_url="http://checker.test",
-                            min_notify_tier=Tier.medium, auto_writeback_tier=Tier.high)
+        hb = FakeHomebox(
+            router,
+            [
+                entity("i1", "Laminator", "3M", "TL1302Z"),
+                entity("i2", "Rock n Play Sleeper", "Fisher-Price"),
+                entity("i3", "Router", "Netgear", "R7000"),
+                entity("i4", "Old laminator", "3M", "TL1302Z", archived=True),
+                entity("loc", "Garage", entityType={"isLocation": True}),
+            ],
+        )
+        settings = Settings(
+            homebox_url=HB,
+            homebox_token="hb_x",
+            cpsc_base_url=CPSC,
+            data_dir=tmp_path,
+            public_url="http://checker.test",
+            min_notify_tier=Tier.medium,
+            auto_writeback_tier=Tier.high,
+        )
         notifier = FakeNotifier()
-        runner = Runner(settings, DB(tmp_path / "t.db"), [CPSCSource(CPSC)],
-                        HomeboxClient(HB, "hb_x"), notifier)
+        runner = Runner(
+            settings, DB(tmp_path / "t.db"), [CPSCSource(CPSC)], HomeboxClient(HB, "hb_x"), notifier
+        )
         yield runner, hb, notifier, router
 
 
@@ -110,9 +132,9 @@ def test_full_cycle_notifies_and_writes_back_once(env, raw_recalls):
     runner, hb, notifier, _ = env
     res = runner.run()
     assert not res.errors
-    assert res.items_total == 3              # archived item and location skipped
+    assert res.items_total == 3  # archived item and location skipped
     assert res.recalls_total == len(raw_recalls)
-    assert len(notifier.sent) == 1           # one batched message
+    assert len(notifier.sent) == 1  # one batched message
     title, body = notifier.sent[0]
     assert "TL1302Z" not in title and "Laminator" in body and "Rock n Play" in body
     assert "http://checker.test/match/" in body
@@ -135,8 +157,8 @@ def test_full_cycle_notifies_and_writes_back_once(env, raw_recalls):
 def test_index_released_after_run(env, raw_recalls):
     runner, *_ = env
     assert not runner.run().errors
-    assert runner._index is None             # not held for the 24h until the next run
-    res = runner.run()                       # and rebuilt when needed
+    assert runner._index is None  # not held for the 24h until the next run
+    res = runner.run()  # and rebuilt when needed
     assert res.recalls_total == len(raw_recalls)
 
 
@@ -153,7 +175,7 @@ def test_changed_item_is_refetched(env):
 def test_dismissed_not_notified_and_confirm_writes_back(env):
     runner, hb, notifier, _ = env
     notifier.fail = True
-    runner.run()                             # delivery fails -> retried later
+    runner.run()  # delivery fails -> retried later
     sleeper = [r for r in runner.db.list_matches() if r["item_id"] == "i2"]
     for r in sleeper:
         runner.db.set_match_status(r["id"], "dismissed")
@@ -165,7 +187,7 @@ def test_dismissed_not_notified_and_confirm_writes_back(env):
     runner.db.set_match_status(sleeper[0]["id"], "confirmed")
     runner.write_back_match(sleeper[0]["id"])
     assert [t["name"] for t in hb.entities["i2"]["tags"]] == ["Recall"]
-    assert len(hb.tags) == 1                 # existing tag reused
+    assert len(hb.tags) == 1  # existing tag reused
 
 
 def test_dry_run_has_no_side_effects(env):
@@ -208,16 +230,16 @@ def test_failing_source_does_not_block_others(env, raw_recalls):
     res = runner.run()
     assert any("broken sync: feed down" in e for e in res.errors)
     assert res.recalls_total == len(raw_recalls)
-    assert notifier.sent                     # matching and alerts still happened
+    assert notifier.sent  # matching and alerts still happened
 
 
 def test_parser_version_bump_forces_full_refetch(env):
     runner, _, _, router = env
     runner.run()
-    runner.db.set_meta("cpsc_parser_version", "0")   # as if stored by an older release
+    runner.db.set_meta("cpsc_parser_version", "0")  # as if stored by an older release
     runner.run()
     runner.run()
     cpsc = [c.request.url.params for c in router.calls if c.request.url.host == "cpsc.test"]
-    assert "RecallDateStart" in cpsc[0]              # first run: full
-    assert "RecallDateStart" in cpsc[1]              # version changed: full again
-    assert "LastPublishDateStart" in cpsc[2]         # then incremental
+    assert "RecallDateStart" in cpsc[0]  # first run: full
+    assert "RecallDateStart" in cpsc[1]  # version changed: full again
+    assert "LastPublishDateStart" in cpsc[2]  # then incremental

@@ -14,8 +14,8 @@ def best(matcher, it, recall_id):
 def test_model_normalisation():
     assert norm_model("TL-1302Z™") == "TL1302Z"
     assert is_model_like("TL1302Z")
-    assert not is_model_like("2019")       # bare 4-digit numbers look like years
-    assert not is_model_like("MALM")       # no digits
+    assert not is_model_like("2019")  # bare 4-digit numbers look like years
+    assert not is_model_like("MALM")  # no digits
     assert "TL1302Z" in model_tokens("the TL 1302Z laminator")
 
 
@@ -68,14 +68,13 @@ def test_brand_only_different_product_no_match(matcher):
 
 
 def test_unrelated_item_no_match(matcher):
-    assert matcher.match_item(item(name="Router", manufacturer="Netgear",
-                                   modelNumber="R7000")) == []
+    assert (
+        matcher.match_item(item(name="Router", manufacturer="Netgear", modelNumber="R7000")) == []
+    )
 
 
 def test_generic_manufacturer_ignored(matcher):
     assert matcher.match_item(item(name="Space heater", manufacturer="Generic")) == []
-
-
 
 
 # --- regressions from real Homebox data (all were false positives, all dismissed) ---
@@ -83,12 +82,24 @@ def test_generic_manufacturer_ignored(matcher):
 KOBALT_ITEMS = [
     item(name="Kobalt 4.0Ah 40v Battery", manufacturer="Kobalt", modelNumber="KB 440-03"),
     item(name="Kobalt 40v 6.0Ah Battery", manufacturer="Kobalt", modelNumber="KB 640-03"),
-    item(name="Kobalt 40v Hedge Trimmer", manufacturer="Kobalt", modelNumber="KHT 1040B-03",
-         purchaseDate="2024-10-28"),
-    item(name="Kobalt 40v Lawn Mower", manufacturer="Kobalt", modelNumber="KPM 1040B-03",
-         purchaseDate="2025-04-08"),
-    item(name="Kobalt 40v String Trimmer", manufacturer="Kobalt", modelNumber="KST 1040B-03",
-         purchaseDate="2025-08-03"),
+    item(
+        name="Kobalt 40v Hedge Trimmer",
+        manufacturer="Kobalt",
+        modelNumber="KHT 1040B-03",
+        purchaseDate="2024-10-28",
+    ),
+    item(
+        name="Kobalt 40v Lawn Mower",
+        manufacturer="Kobalt",
+        modelNumber="KPM 1040B-03",
+        purchaseDate="2025-04-08",
+    ),
+    item(
+        name="Kobalt 40v String Trimmer",
+        manufacturer="Kobalt",
+        modelNumber="KST 1040B-03",
+        purchaseDate="2025-08-03",
+    ),
 ]
 
 
@@ -113,14 +124,14 @@ def test_real_kobalt_model_still_matches(matcher):
 
 
 def test_retailer_is_not_a_brand(matcher):
-    it = item(name="Living Room Fire TV Stick 4K Plus", manufacturer="Amazon",
-              purchaseDate="2026-10-14")
+    it = item(
+        name="Living Room Fire TV Stick 4K Plus", manufacturer="Amazon", purchaseDate="2026-10-14"
+    )
     assert best(matcher, it, 10128) is None
 
 
 def test_post_recall_purchase_caps_at_low(matcher):
-    it = item(name="Laminator", manufacturer="3M", modelNumber="TL1302Z",
-              purchaseDate="2029-01-01")
+    it = item(name="Laminator", manufacturer="3M", modelNumber="TL1302Z", purchaseDate="2029-01-01")
     m = best(matcher, it, 11022)
     assert m and m.tier == Tier.low
 

@@ -23,7 +23,8 @@ _COMPANY_LOCATION = re.compile(r",?\s+of\s+[A-Z][\w .,'-]*$")
 _SOLD_AT = re.compile(r"^\s*sold\s+(at|exclusively|online|by)\b", re.I)
 # Retailer entries are often sentences: "Online at Amazon.com from August 2024 ... for $90."
 _RETAIL_SENTENCE = re.compile(
-    r"\$|\bnationwide\b|\bonline\b|\bstores?\b|\bfrom\s+[A-Z][a-z]+\s+\d{4}")
+    r"\$|\bnationwide\b|\bonline\b|\bstores?\b|\bfrom\s+[A-Z][a-z]+\s+\d{4}"
+)
 # "... Sold Exclusively at Lowe's Stores" inside a title
 _TITLE_SOLD = re.compile(r"\s+sold\s+(?:exclusively\s+)?(?:at|on|by|through)\b.*$", re.I)
 

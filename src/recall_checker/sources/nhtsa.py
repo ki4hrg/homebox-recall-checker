@@ -10,6 +10,7 @@ Only the post-2010 archive is used: the pre-2010 one has no part numbers, mostly
 make as the model, and car seats that old are long past their expiry date.
 Field layout: https://static.nhtsa.gov/odi/ffdd/rcl/RCL.txt
 """
+
 from __future__ import annotations
 
 import io
@@ -31,7 +32,19 @@ KINDS = {"C": "child seat", "E": "equipment", "T": "tire", "V": "vehicle"}
 
 # 0-based column indexes (RCL.txt numbers fields from 1)
 CAMPNO, MAKE, MODEL, YEAR, MFGCAMPNO, COMPNAME, MFGNAME, BGMAN, ENDMAN, TYPE, POTAFF, ODATE = (
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+)
 RCDATE, DATEA, DESC, CONSEQUENCE, CORRECTIVE, NOTES = 15, 16, 19, 20, 21, 22
 MFR_COMP_NAME, MFR_COMP_DESC, MFR_COMP_PTNO = 24, 25, 26
 N_FIELDS = 29
@@ -64,7 +77,7 @@ class _Campaign:
     notes: str = ""
     components: list[str] = field(default_factory=list)
     makes: list[str] = field(default_factory=list)
-    models: list[str] = field(default_factory=list)       # "MAKE MODEL", display
+    models: list[str] = field(default_factory=list)  # "MAKE MODEL", display
     model_numbers: list[str] = field(default_factory=list)  # bare models + part numbers
     part_names: list[str] = field(default_factory=list)
     received: date | None = None
@@ -155,12 +168,14 @@ class NHTSASource:
     name = "nhtsa"
     parser_version = 1
 
-    def __init__(self, types: set[str], url: str = FLAT_FILE_URL,
-                 client: httpx.Client | None = None):
+    def __init__(
+        self, types: set[str], url: str = FLAT_FILE_URL, client: httpx.Client | None = None
+    ):
         self.types = types
         self.url = url
-        self.client = client or httpx.Client(timeout=httpx.Timeout(300.0, connect=15.0),
-                                             follow_redirects=True)
+        self.client = client or httpx.Client(
+            timeout=httpx.Timeout(300.0, connect=15.0), follow_redirects=True
+        )
 
     def fetch(self, since: date | None) -> list[Recall]:
         # No date filter exists for the flat file; the whole file (~15 MB zipped) is fetched
@@ -176,6 +191,7 @@ class NHTSASource:
                 with zf.open(name) as fh:
                     text = io.TextIOWrapper(fh, encoding="latin-1", newline="")
                     recalls = parse(text, self.types)
-        log.info("NHTSA returned %d campaigns of types %s", len(recalls),
-                 ",".join(sorted(self.types)))
+        log.info(
+            "NHTSA returned %d campaigns of types %s", len(recalls), ",".join(sorted(self.types))
+        )
         return recalls

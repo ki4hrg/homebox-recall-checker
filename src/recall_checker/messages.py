@@ -1,4 +1,5 @@
 """Human-readable text for notifications and Homebox maintenance entries."""
+
 from __future__ import annotations
 
 from .config import Tier
@@ -16,8 +17,11 @@ def maintenance_text(recall: Recall, tier: Tier, ui_link: str = "") -> str:
     if recall.consumer_contact:
         lines += ["Contact: " + recall.consumer_contact, ""]
     if recall.manufactured_from or recall.manufactured_to:
-        lines += [f"Affected units made: {recall.manufactured_from or '?'} to "
-                  f"{recall.manufactured_to or '?'}", ""]
+        lines += [
+            f"Affected units made: {recall.manufactured_from or '?'} to "
+            f"{recall.manufactured_to or '?'}",
+            "",
+        ]
     if recall.models:
         lines += ["Models/parts: " + ", ".join(recall.models[:30]), ""]
     lines.append(f"Recall date: {recall.recall_date}  ·  Match confidence: {tier.name}")
@@ -31,7 +35,8 @@ def notification(entries: list[dict], ui_base: str = "") -> tuple[str, str]:
     """entries: dicts with item, recall, tier, item_link, match_id."""
     n = len(entries)
     title = (
-        f"Recall alert: {entries[0]['item']['name']}" if n == 1
+        f"Recall alert: {entries[0]['item']['name']}"
+        if n == 1
         else f"Recall alert: {n} possible recalls on your Homebox items"
     )
     parts = []

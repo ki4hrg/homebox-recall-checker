@@ -1,4 +1,5 @@
 """Mark matched items inside Homebox: a tag plus a maintenance entry."""
+
 from __future__ import annotations
 
 import logging
@@ -46,7 +47,8 @@ class WriteBack:
         existing = self.client.list_maintenance(item_id)
         if not any((e.get("name") or "") == name for e in existing):
             self.client.add_maintenance(
-                item_id, name=name,
+                item_id,
+                name=name,
                 description=maintenance_text(recall, tier, ui_link),
                 scheduled_date=date.today().isoformat(),
             )

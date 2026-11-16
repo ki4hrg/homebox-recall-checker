@@ -38,7 +38,7 @@ def test_britax_campaign_fields(recalls):
     assert r.recall_date == date(2026, 8, 20)
     assert r.title.startswith("Britax Child Safety, Inc. recalls ")
     assert "(child seats)" in r.title
-    assert "B-SAFE 35" in r.models and "M058600" in r.models    # model + part number
+    assert "B-SAFE 35" in r.models and "M058600" in r.models  # model + part number
     assert "BRITAX" in r.brands
     assert r.hazards and r.remedies
     assert r.url.endswith("nhtsaId=26C006000")
@@ -52,32 +52,51 @@ def test_car_seat_matching(recalls):
         return hits[0].tier if hits else None
 
     # model number exactly as listed, with brand
-    assert tier(item(name="Infant car seat", manufacturer="Britax",
-                     modelNumber="B-Safe 35"), "26C006000") == Tier.high
+    assert (
+        tier(
+            item(name="Infant car seat", manufacturer="Britax", modelNumber="B-Safe 35"),
+            "26C006000",
+        )
+        == Tier.high
+    )
     # digit-free model name inside the item name: a product line, so medium with the brand
     assert tier(item(name="Graco SnugRide Turn & Slide"), "26C003000") == Tier.medium
     assert tier(item(name="SnugRide Turn & Slide"), "26C003000") is None
     # model with digits inside the name, brand in the name too
     assert tier(item(name="Britax B-Safe 35 infant seat"), "26C006000") == Tier.high
     # part number from the seat's label
-    assert tier(item(name="Car seat", manufacturer="Britax",
-                     modelNumber="M058600"), "26C006000") == Tier.high
+    assert (
+        tier(item(name="Car seat", manufacturer="Britax", modelNumber="M058600"), "26C006000")
+        == Tier.high
+    )
     # same brand, different seat
-    assert tier(item(name="Convertible car seat", manufacturer="Britax",
-                     modelNumber="One4Life"), "26C006000") in (None, Tier.low)
+    assert tier(
+        item(name="Convertible car seat", manufacturer="Britax", modelNumber="One4Life"),
+        "26C006000",
+    ) in (None, Tier.low)
     # equipment: bare-number model needs the brand
-    assert tier(item(name="RV fridge", manufacturer="Norcold", modelNumber="1210"),
-                "10E049000") == Tier.high
-    assert tier(item(name="Mini fridge", manufacturer="Danby", modelNumber="1210"),
-                "10E049000") is None
+    assert (
+        tier(item(name="RV fridge", manufacturer="Norcold", modelNumber="1210"), "10E049000")
+        == Tier.high
+    )
+    assert (
+        tier(item(name="Mini fridge", manufacturer="Danby", modelNumber="1210"), "10E049000")
+        is None
+    )
 
 
 def test_bought_before_manufacture_caps_low(recalls):
     r = recalls["26C006000"]
     m = Matcher(RecallIndex([r]))
     early = r.manufactured_from.replace(year=r.manufactured_from.year - 2)
-    hit = m.match_item(item(name="Infant seat", manufacturer="Britax",
-                            modelNumber="B-Safe 35", purchaseDate=early.isoformat()))
+    hit = m.match_item(
+        item(
+            name="Infant seat",
+            manufacturer="Britax",
+            modelNumber="B-Safe 35",
+            purchaseDate=early.isoformat(),
+        )
+    )
     assert hit and hit[0].tier == Tier.low
 
 

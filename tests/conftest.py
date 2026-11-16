@@ -25,8 +25,18 @@ def matcher(recalls):
 
 
 def item(**kw) -> dict:
-    base = {"id": kw.get("name", "x"), "name": "", "description": "", "manufacturer": "",
-            "modelNumber": "", "serialNumber": "", "purchaseDate": None, "tags": [],
-            "fields": [], "location": "", "updatedAt": "2026-01-01T00:00:00Z"}
+    base = {
+        "id": kw.get("name", "x"),
+        "name": "",
+        "description": "",
+        "manufacturer": "",
+        "modelNumber": "",
+        "serialNumber": "",
+        "purchaseDate": None,
+        "tags": [],
+        "fields": [],
+        "location": "",
+        "updatedAt": "2026-01-01T00:00:00Z",
+    }
     base.update(kw)
     return base

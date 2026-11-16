@@ -25,5 +25,6 @@ def test_clean_company():
 def test_brand_from_title_variants():
     assert "Fisher-Price" in extract_brands({"Title": "Fisher-Price Reannounces Recall of X"})
     assert "Lasko Products Inc." in extract_brands(
-        {"Title": "CPSC, Lasko Products Inc. Announce Recall of Space Heaters"})
+        {"Title": "CPSC, Lasko Products Inc. Announce Recall of Space Heaters"}
+    )
     assert "3M" in extract_brands({"Title": "Scotch Thermal Laminators Recalled by 3M Due to Burn"})

@@ -50,26 +50,45 @@ def create_app(runner: Runner) -> FastAPI:
         }
 
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request, status: str = "new", tier: str = "", notice: str = "",
-              notice_ok: bool = True):
+    def index(
+        request: Request,
+        status: str = "new",
+        tier: str = "",
+        notice: str = "",
+        notice_ok: bool = True,
+    ):
         min_tier = Tier.parse(tier) if tier else Tier.low
         rows = db.list_matches(status if status in STATUSES else None, int(min_tier))
-        return templates.TemplateResponse(request, "index.html", {
-            "matches": [hydrate(r) for r in rows],
-            "status": status, "tier": tier, "counts": db.match_counts(),
-            "last_run": last_run(), "running": runner.running,
-            "settings": runner.s, "notice": notice, "notice_ok": notice_ok,
-            "notifier_configured": runner.notifier.configured,
-        })
+        return templates.TemplateResponse(
+            request,
+            "index.html",
+            {
+                "matches": [hydrate(r) for r in rows],
+                "status": status,
+                "tier": tier,
+                "counts": db.match_counts(),
+                "last_run": last_run(),
+                "running": runner.running,
+                "settings": runner.s,
+                "notice": notice,
+                "notice_ok": notice_ok,
+                "notifier_configured": runner.notifier.configured,
+            },
+        )
 
     @app.get("/match/{match_id}", response_class=HTMLResponse)
     def detail(request: Request, match_id: int):
         row = db.get_match(match_id)
         if not row:
             raise HTTPException(404)
-        return templates.TemplateResponse(request, "match.html", {
-            "m": hydrate(row), "settings": runner.s,
-        })
+        return templates.TemplateResponse(
+            request,
+            "match.html",
+            {
+                "m": hydrate(row),
+                "settings": runner.s,
+            },
+        )
 
     @app.post("/match/{match_id}/status")
     def set_status(match_id: int, status: str = Form(...)):

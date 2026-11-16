@@ -1,4 +1,5 @@
 """Minimal client for the Homebox 0.26+ /v1/entities API."""
+
 from __future__ import annotations
 
 import logging
@@ -41,7 +42,8 @@ def slim_item(entity: dict) -> dict:
         "manufacturer": entity.get("manufacturer") or "",
         "modelNumber": entity.get("modelNumber") or "",
         "serialNumber": entity.get("serialNumber") or "",
-        "purchaseDate": None if _is_zero_date(entity.get("purchaseDate"))
+        "purchaseDate": None
+        if _is_zero_date(entity.get("purchaseDate"))
         else entity["purchaseDate"][:10],
         "updatedAt": entity.get("updatedAt") or "",
         "tags": [{"id": t["id"], "name": t.get("name", "")} for t in entity.get("tags") or []],
@@ -107,8 +109,9 @@ class HomeboxClient:
     def list_maintenance(self, entity_id: str) -> list[dict]:
         return self._req("GET", f"/entities/{entity_id}/maintenance").json() or []
 
-    def add_maintenance(self, entity_id: str, name: str, description: str,
-                        scheduled_date: str) -> dict:
+    def add_maintenance(
+        self, entity_id: str, name: str, description: str, scheduled_date: str
+    ) -> dict:
         return self._req(
             "POST",
             f"/entities/{entity_id}/maintenance",

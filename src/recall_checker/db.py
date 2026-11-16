@@ -152,8 +152,9 @@ class DB:
         return json.loads(row["data"]) if row else None
 
     # --- matches ---
-    def insert_match(self, item_id: str, recall_key: str, tier: int, score: float,
-                     evidence: list[dict]) -> int | None:
+    def insert_match(
+        self, item_id: str, recall_key: str, tier: int, score: float, evidence: list[dict]
+    ) -> int | None:
         """Insert a new match. Existing pairs only get their tier/evidence refreshed and
         never resurface: a dismissed match stays dismissed. Returns the id if newly created."""
         ts = now()
@@ -190,14 +191,16 @@ class DB:
 
     def set_match_status(self, match_id: int, status: str) -> None:
         with self.tx() as c:
-            c.execute("UPDATE matches SET status=?, updated_at=? WHERE id=?",
-                      (status, now(), match_id))
+            c.execute(
+                "UPDATE matches SET status=?, updated_at=? WHERE id=?", (status, now(), match_id)
+            )
 
     def mark_notified(self, match_ids: Iterable[int]) -> None:
         ts = now()
         with self.tx() as c:
-            c.executemany("UPDATE matches SET notified_at=? WHERE id=?",
-                          [(ts, i) for i in match_ids])
+            c.executemany(
+                "UPDATE matches SET notified_at=? WHERE id=?", [(ts, i) for i in match_ids]
+            )
 
     def mark_written_back(self, match_id: int) -> None:
         with self.tx() as c:
